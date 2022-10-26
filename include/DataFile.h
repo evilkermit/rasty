@@ -2,11 +2,18 @@
 #define OSP_RASTER_DATAFILE_H
 
 #include <string>
+#include <vector>
 
 #include <osp_raster.h>
+#include "ospray/ospray_cpp/ext/rkcommon.h"
+
 
 namespace rasty
 {
+
+    enum FILETYPE {TIFF, NETCDF, UNKNOWN};
+
+
     class DataFile {
         public:
             DataFile();
@@ -16,15 +23,16 @@ namespace rasty
             void printStatistics();
 
             std::string filename;
+            FILETYPE filetype;
 
             unsigned long int height;
             unsigned long int width;
             unsigned long int numValues;
 
-            float originX;
-            float originY;
-            float pixelSizeX;
-            float pixelSizeY;
+            double originX;
+            double originY;
+            double pixelSizeX;
+            double pixelSizeY;
 
             double geoTransform[6];
 
@@ -35,7 +43,16 @@ namespace rasty
             float stdDev;
             float *data;
 
+            /* basic representation */
+            std::vector<rkcommon::math::vec3d> vertex;
+            std::vector<rkcommon::math::vec4f> color;
+            std::vector<rkcommon::math::vec3ui> index;
+        
+
             bool statsCalculated;
+        private:
+            FILETYPE getFiletype();
+            void readTIFF();
 
     }; 
 } 

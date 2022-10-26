@@ -15,6 +15,7 @@ SET(RKCOMMON_INCLUDE_DIR ${BASE_OSP}rkcommon/include)
 SET(OSPRAY_LIBRARIES ${BASE_OSP}ospray/lib/libospray.so.2.10.0)
 FIND_PACKAGE(ospray REQUIRED HINT ${ospray_DIR})
 FIND_PACKAGE(embree REQUIRED HINT ${embree_DIR})
+# FIND_PACKAGE(CGAL)
 
 # SET(embree_DIR ""
 #     CACHE FILEPATH "Directory containing an embree-config.cmake file")
@@ -23,13 +24,17 @@ FIND_PACKAGE(embree REQUIRED HINT ${embree_DIR})
 # FIND_PACKAGE(embree 3.2 REQUIRED)
 # FIND_PACKAGE(ospray REQUIRED)
 
+get_cmake_property(_variableNames VARIABLES)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
 
 # OPTION(USE_NETCDF "Enable NetCDF file reading" ON)
 OPTION(BUILD_EXAMPLES "Build example applications" ON)
 # OPTION(BUILD_DOCUMENTATION "Build documentation with Sphinx" OFF)
 
-
-SET(OSP_RASTER_LIBS ${EMBREE_LIBRARIES} ${OSPRAY_LIBRARIES} ${rkcommon_DIR})
+# ${CGAL_LIBRARIES}
+SET(OSP_RASTER_LIBS ${EMBREE_LIBRARIES} ${OSPRAY_LIBRARIES} )
 SET(OSP_RASTER_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include"
     ${OSPRAY_INCLUDE_DIR} ${EMBREE_INCLUDE_DIRS} ${RKCOMMON_INCLUDE_DIR})
 
@@ -65,7 +70,7 @@ FILE(GLOB OSP_RASTER_SOURCES "src/*.cpp" "src/lodepng/*.cpp")
 
 ADD_LIBRARY(osp_raster SHARED ${OSP_RASTER_SOURCES})
 TARGET_INCLUDE_DIRECTORIES(osp_raster PUBLIC ${OSP_RASTER_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(osp_raster ${OSP_RASTER_LIBS} pthread jpeg)
+TARGET_LINK_LIBRARIES(osp_raster ${OSP_RASTER_LIBS} pthread jpeg gdal)
 
 IF(BUILD_EXAMPLES)
     ADD_EXECUTABLE(simple_render ${OSP_RASTER_SOURCES}

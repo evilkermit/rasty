@@ -3,31 +3,35 @@
 #include <iostream>
 #include <vector>
 #include <ospray/ospray_util.h>
+#include "ospray/ospray_cpp/ext/rkcommon.h"
 
 namespace rasty {
 
 TransferFunction::TransferFunction()
 {
-    this->colorMap.reserve(256*3);
+    this->colorMap.reserve(256);
+    // this->colorMap.reserve(256*3);
     this->opacityMap.reserve(256);
 
     //default black to white color map
     //and ramp opacity map
     for(int i = 0; i < 256; i++) {
-        this->colorMap.push_back(i/255.0);
-        this->colorMap.push_back(i/255.0);
-        this->colorMap.push_back(i/255.0);
+        float val = i/(float)255.0;
+        this->colorMap.push_back(rkcommon::math::vec3f(val, val, val));
+        // this->colorMap.push_back(i/255.0);
+        // this->colorMap.push_back(i/255.0);
         this->opacityMap.push_back(i/255.0);
     }
 
     // setup OSPRay object(s)
-    this->oTF = ospNewTransferFunction("piecewise_linear");
-    this->oColorData = ospNewSharedData2D(this->colorMap.data(), OSP_FLOAT, 
-            this->colorMap.size()/3, 3);
+    this->oTF = ospNewTransferFunction("piecewiseLinear");
+    this->oColorData = ospNewSharedData1D(this->colorMap.data(), OSP_VEC3F, 
+            this->colorMap.size());
     this->oOpacityData = ospNewSharedData1D(this->opacityMap.data(), OSP_FLOAT,
             this->opacityMap.size());
-    ospSetObject(this->oTF, "colors", this->oColorData);
-    ospSetObject(this->oTF, "opacities", this->oOpacityData);
+
+    ospSetObject(this->oTF, "color", this->oColorData);
+    ospSetObject(this->oTF, "opacity", this->oOpacityData);
     ospCommit(this->oTF);
 }
 
@@ -71,7 +75,7 @@ OSPTransferFunction TransferFunction::asOSPObject()
     return this->oTF;
 }
 
-void TransferFunction::setColorMap(std::vector<float> &map)
+void TransferFunction::setColorMap(std::vector<rkcommon::math::vec3f> &map)
 {
     //map may be empty if the config file is used
     if(map.empty())
@@ -86,9 +90,9 @@ void TransferFunction::setColorMap(std::vector<float> &map)
     for(int i = 0; i < map.size(); i++)
         this->colorMap.push_back(map[i]);
 
-    this->oColorData = ospNewSharedData2D(this->colorMap.data(), OSP_FLOAT,
-            this->colorMap.size()/3, 3);
-    ospSetObject(this->oTF, "colors", this->oColorData);
+    this->oColorData = ospNewSharedData1D(this->colorMap.data(), OSP_VEC3F,
+            this->colorMap.size());
+    ospSetObject(this->oTF, "color", this->oColorData);
 
     ospCommit(this->oTF);
 }

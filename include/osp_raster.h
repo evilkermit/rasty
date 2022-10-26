@@ -18,6 +18,8 @@ namespace rasty{
 
     class Raster;
 
+    class Camera; 
+    
     class TransferFunction;
 
     void rastyInit(int *argc, const char **argv);

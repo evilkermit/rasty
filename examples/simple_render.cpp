@@ -22,6 +22,7 @@
 #include <string>
 
 #include "Raster.h"
+#include "Camera.h"
 #include "DataFile.h"
 #include <osp_raster.h>
 
@@ -37,32 +38,23 @@ int main(int argc, const char **argv)
 
 
   rasty::rastyInit(&argc, argv);
-  std::string filename = "../data/knoxville.tiff";
-  rasty::Raster *raster = new rasty::Raster(filename);
-
-
+  std::string filename = "../data/LFBB.tiff";
+  {
+    rasty::Raster *raster = new rasty::Raster(filename);
+    rasty::Camera *camera = new rasty::Camera(1024, 1024); // (width, height)
   // image size
-  vec2i imgSize;
-  imgSize.x = 3840; // width
-  imgSize.y = 2160; // height
+  // vec2i imgSize;
+  // imgSize.x = 1024; // width
+  // imgSize.y = 1024; // height
 
   // camera
-  vec3f cam_pos{0.f, 0.f, 512.f};
-  vec3f cam_up{0.f, 0.f, 0.f};
-  vec3f cam_view{128.f, 128.f, 128.f};
+  // vec3f cam_pos{0.f, 0.f, 0.f};
+  // vec3f cam_up{0.f, 0.f, 1.f};
+  // vec3f cam_view{-1200.f, -1200.f, -500.f};
+  // vec3f cam_pos{500.f, 0.f, 2200.f};
+  // vec3f cam_up{0.f, 0.f, 1.f};
+  // vec3f cam_view{1200.f, 1200.f, -500.f};
 
-  // triangle mesh data
-  // std::vector<vec3f> vertex = {vec3f(-1.0f, -1.0f, 3.0f),
-  //     vec3f(-1.0f, 1.0f, 3.0f),
-  //     vec3f(1.0f, -1.0f, 3.0f),
-  //     vec3f(0.1f, 0.1f, 0.3f)};
-
-  // std::vector<vec4f> color = {vec4f(0.9f, 0.5f, 0.5f, 1.0f),
-  //     vec4f(0.8f, 0.8f, 0.8f, 1.0f),
-  //     vec4f(0.8f, 0.8f, 0.8f, 1.0f),
-  //     vec4f(0.5f, 0.9f, 0.5f, 1.0f)};
-
-  // std::vector<vec3ui> index = {vec3ui(0, 1, 2), vec3ui(1, 2, 3)};
 
 
 
@@ -73,15 +65,14 @@ int main(int argc, const char **argv)
   //   return init_error;
 
   // use scoped lifetimes of wrappers to release everything before ospShutdown()
-  {
     // create and setup camera
-    ospray::cpp::Camera camera("perspective");
-    camera.setParam("aspect", imgSize.x / (float)imgSize.y);
-    camera.setParam("position", cam_pos);
-    camera.setParam("direction", cam_view);
-    camera.setParam("up", cam_up);
-    camera.setParam("fovy", 180);
-    camera.commit(); // commit each object to indicate modifications are done
+    // ospray::cpp::Camera camera("perspective");
+    // // camera.setParam("aspect", imgSize.x / (float)imgSize.y);
+    // camera.setParam("position", cam_pos);
+    // camera.setParam("direction", cam_view);
+    // camera.setParam("up", cam_up);
+    // // camera.setParam("fovy", 180);
+    // camera.commit(); // commit each object to indicate modifications are done
 
     // create and setup model and mesh
     // ospray::cpp::Geometry mesh("mesh");
@@ -92,13 +83,13 @@ int main(int argc, const char **argv)
 
     // put the mesh into a model
     // ospray::cpp::GeometricModel model(mesh);
-    ospray::cpp::VolumetricModel model(raster->asOSPRayObject());
-    model.commit();
+    // ospray::cpp::VolumetricModel model(raster->asOSPRayObject());
+    // model.commit();
 
 
     // put the model into a group (collection of models)
     ospray::cpp::Group group;
-    group.setParam("volume", ospray::cpp::CopiedData(model));
+    group.setParam("geometry", ospray::cpp::CopiedData(raster->asOSPRayObject()));
     group.commit();
 
     // put the group into an instance (give the group a world transform)
@@ -110,7 +101,7 @@ int main(int argc, const char **argv)
     world.setParam("instance", ospray::cpp::CopiedData(instance));
 
     // create and setup light for Ambient Occlusion
-    ospray::cpp::Light light("ambient");
+    ospray::cpp::Light light("sunSky");
     light.commit();
 
     world.setParam("light", ospray::cpp::CopiedData(light));
@@ -121,7 +112,7 @@ int main(int argc, const char **argv)
 
     // complete setup of renderer
     renderer.setParam("aoSamples", 1);
-    renderer.setParam("backgroundColor", 1.0f); // white, transparent
+    renderer.setParam("backgroundColor", vec4f(135,206,235,0.5)); // white, transparent
     renderer.commit();
 
     // create and setup framebuffer
@@ -130,7 +121,7 @@ int main(int argc, const char **argv)
     framebuffer.clear();
 
     // render one frame
-    framebuffer.renderFrame(renderer, camera, world);
+    framebuffer.renderFrame(renderer, camera->asOSPRayObject(), world);
 
     // access framebuffer and write its content as PPM file
     uint32_t *fb = (uint32_t *)framebuffer.map(OSP_FB_COLOR);

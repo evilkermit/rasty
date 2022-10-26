@@ -4,6 +4,7 @@
 #include <osp_raster.h>
 
 #include <ospray/ospray.h>
+#include "ospray/ospray_cpp/ext/rkcommon.h"
 
 #include <vector>
 #include <map>
@@ -34,14 +35,14 @@ namespace rasty {
 
             void setRange(float minimum, float maximum);
             void attenuateOpacity(float amount);
-            void setColorMap(std::vector<float> &map);
+            void setColorMap(std::vector<rkcommon::math::vec3f> &map);
             void setOpacityMap(std::vector<float> &map);
 
             OSPTransferFunction asOSPObject();
             
         private:
 
-            std::vector<float> colorMap;
+            std::vector<rkcommon::math::vec3f> colorMap;
             std::vector<float> opacityMap;
             float minVal;
             float maxVal;

@@ -4,6 +4,7 @@
 
 #include <osp_raster.h>
 #include <DataFile.h>
+#include <RasterMesh.h>
 
 #include <string>
 #include <vector>
@@ -23,15 +24,18 @@ namespace rasty
 
 
             std::vector<long unsigned int> getBounds();
-            OSPVolume asOSPRayObject();
+            OSPGeometricModel asOSPRayObject();
 
             std::string ID;
 
         private:
             DataFile *dataFile;
+            RasterMesh *rasterMesh;
             TransferFunction *transferFunction;
 
-            OSPVolume oVolume;
+            OSPGeometry oMesh;
+            OSPMaterial oMaterial;
+            OSPGeometricModel oModel;
             OSPData oData;
 
             void init();
