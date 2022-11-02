@@ -74,12 +74,15 @@ DataFile::DataFile(): statsCalculated(false){
 }
 
 DataFile::~DataFile(){
+    std::cout << "[DataFile] Deleting DataFile" << std::endl;
 
     if (this->data != NULL){
         free(this->data);
     }
 
     this->data = NULL;
+    std::cout << "[DataFile] Deleted DataFile" << std::endl;
+
 }
 
 
@@ -192,7 +195,7 @@ void DataFile::readTIFF()
 
     /* close the dataset */
     GDALClose(dataset); 
-
+    GDALDestroy();
 
     /* convert data set to vertex and color arrays */
     numIndices = (this->width - 1) * (this->height - 1) * 2;
@@ -209,7 +212,8 @@ void DataFile::readTIFF()
             /* get the elevation value */
             double z = this->data[(x * this->width) +y];
             this->vertex.push_back(rkcommon::math::vec3d(currX, currY, z));
-            this->color.push_back(rkcommon::math::vec4f(229.f, 217.f, 194.f, 1.f));
+            // this->vertex.push_back(rkcommon::math::vec3d(x, y, z));
+            this->color.push_back(rkcommon::math::vec4f(0.9f, 0.5f, 0.5f, 1.f));
 
             /* create indices for vertex array */
             if (x+1 < this->height && y+1 < this->width) {

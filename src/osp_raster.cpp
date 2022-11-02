@@ -11,9 +11,11 @@
 namespace rasty
 {
 
-void rastyInit(int *argc, const char **argv)
+void rastyInit(int argc, const char **argv)
 {
-    ospInit(argc, argv);
+    std::cout<<"Initializing OSPRay"<<std::endl;
+    ospInit(&argc, argv);
+    std::cout<<"Done Initializing OSPRay"<<std::endl;
 }
 
 
@@ -29,19 +31,19 @@ std::string createID()
 
     char buffer[1024];
     // read the column headers
-    char *header = fgets(buffer, 1024, arp);
-    if(header == NULL) {
+    if(fgets(buffer, 1024, arp) == NULL) {
         std::cerr << "WARNING: Unexpected format in /proc/net/arp. ";
         std::cerr << "Object IDs won't work." << std::endl;
         return "";
     }
 
-    char *res = fgets(buffer, 1024, arp);
-    if(res == NULL) {
+    if(fgets(buffer, 1024, arp) == NULL) {
         std::cerr << "WARNING: Unexpected error reading /proc/net/arp. ";
         std::cerr << "Object IDs won't work." << std::endl;
         return "";
     }
+
+    fclose(arp);
 
     char *macaddr;
     macaddr = strtok(buffer, " ");

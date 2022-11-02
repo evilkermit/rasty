@@ -1,5 +1,4 @@
 #include "Raster.h"
-#include "RasterMesh.h"
 #include "DataFile.h"
 #include "TransferFunction.h"
 // #include "osp_raster.h"
@@ -23,6 +22,7 @@ Raster::Raster(std::string filename)
 {   
     std::cout << "[Raster] Init" << std::endl;
     this->ID = createID();
+    std::cout << "[Raster] ID: " << this->ID << std::endl;
 
     /* load data from file */
     std::cout << "[Raster] Creating DataFile Object" << std::endl;
@@ -38,12 +38,11 @@ Raster::Raster(std::string filename)
 
 Raster::~Raster()
 {
-
+    std::cout << "[Raster] Deleting Raster" << std::endl;
     delete this->dataFile;
     this->dataFile = NULL;
 
-    delete this->rasterMesh;
-    this->rasterMesh = NULL;
+
 
     // delete this->transferFunction;
     // this->transferFunction = NULL;
@@ -54,10 +53,13 @@ Raster::~Raster()
     // ospRemoveParam(this->oVolume, "gridOrigin");
     // ospRemoveParam(this->oVolume, "transferFunction");
     // ospRelease(this->oVolume);
-    ospRelease(this->oData);
-    ospRelease(this->oMaterial);
+    // std::cout << "[Raster] Releasing data" << std::endl;
+    // ospRelease(this->oData);
+    std::cout << "[Raster] Releasing mesh" << std::endl;
+    
     ospRelease(this->oMesh);
-    ospRelease(this->oModel);
+    std::cout << "[Raster] Deleted Raster" << std::endl;
+
 }
 
 
@@ -88,14 +90,16 @@ void Raster::init()
     ospCommit(this->oMesh);
 
 
+    
+
     /* set up the material for the mesh */
-    this->oMaterial = ospNewMaterial("", "obj"); // first argument no longer matters
-    ospCommit(this->oMaterial);
+    // this->oMaterial = ospNewMaterial("", "obj"); // first argument no longer matters
+    // ospCommit(this->oMaterial);
 
     /* create a geometric model */
-    this->oModel = ospNewGeometricModel(this->oMesh);
-    ospSetObject(this->oModel, "material", this->oMaterial);
-    ospCommit(this->oModel);
+    // this->oModel = ospNewGeometricModel(this->oMesh);
+    // ospSetObject(this->oModel, "material", this->oMaterial);
+    // ospCommit(this->oModel);
     // ospRelease(mesh);
     // ospRelease(mat);
     // ospSetObject(this->oModel, "material", material);
@@ -105,11 +109,40 @@ void Raster::init()
     // ospCommit(this->oModel);
     // std::cout << "done" << std::endl;
 }
-
-
-OSPGeometricModel Raster::asOSPRayObject()
+rkcommon::math::vec2f Raster::getHW()
 {
-    return this->oModel;
+    return rkcommon::math::vec2f(this->dataFile->height, this->dataFile->width);
+}
+
+std::vector<rkcommon::math::vec3f> Raster::getBounds() 
+{
+    std::vector<rkcommon::math::vec3f> bounds{
+        rkcommon::math::vec3f( // min
+            this->dataFile->originX, 
+            this->dataFile->originY, 
+            this->dataFile->minVal
+            ), 
+        rkcommon::math::vec3f( // max
+            this->dataFile->originX + (this->dataFile->width * this->dataFile->pixelSizeX), 
+            this->dataFile->originY + (this->dataFile->height * this->dataFile->pixelSizeY), 
+            this->dataFile->maxVal
+        )
+    };
+    return bounds;
+}
+
+rkcommon::math::affine3f Raster::getCenterTransformation()
+{
+    const float spacing = 2.5f;
+    std::vector<rkcommon::math::vec3f> bounds = this->getBounds();
+    
+    rkcommon::math::vec3f center = (bounds[0] + bounds[1]) / 2.0f;
+    return rkcommon::math::affine3f::translate(-center);
+}
+
+OSPGeometry Raster::asOSPRayObject()
+{
+    return this->oMesh;
 }
 
 void Raster::loadFromFile(std::string filename)

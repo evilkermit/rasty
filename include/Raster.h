@@ -4,14 +4,14 @@
 
 #include <osp_raster.h>
 #include <DataFile.h>
-#include <RasterMesh.h>
 
 #include <string>
 #include <vector>
 
 #include <ospray/ospray.h>
 // #include <ospray/ospray_cpp.h>
-// #include <ospray/ospray_util.h>
+#include <ospray/ospray_util.h>
+#include "ospray/ospray_cpp/ext/rkcommon.h"
 
 
 
@@ -23,19 +23,22 @@ namespace rasty
             ~Raster();
 
 
-            std::vector<long unsigned int> getBounds();
-            OSPGeometricModel asOSPRayObject();
+            std::vector<rkcommon::math::vec3f> getBounds();
+            rkcommon::math::vec2f getHW();
+            rkcommon::math::affine3f getCenterTransformation();
+
+            OSPGeometry asOSPRayObject();
 
             std::string ID;
-
+            
         private:
             DataFile *dataFile;
-            RasterMesh *rasterMesh;
             TransferFunction *transferFunction;
+            rkcommon::math::affine3f centerTranslation;
 
             OSPGeometry oMesh;
-            OSPMaterial oMaterial;
-            OSPGeometricModel oModel;
+            // OSPMaterial oMaterial;
+            // OSPGeometricModel oModel;
             OSPData oData;
 
             void init();

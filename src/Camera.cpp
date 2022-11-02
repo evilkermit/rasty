@@ -4,13 +4,17 @@
 #include <iostream>
 
 #include <ospray/ospray.h>
+#include <ospray/ospray_util.h>
 
 namespace rasty {
 
 Camera::Camera(int width, int height) :
     imageWidth(width), imageHeight(height), xPos(0.0), yPos(0.0), zPos(0.0),
-    viewX(0.0), viewY(0.0), viewZ(0.0), orbitRadius(0.0)
+    viewX(0.0), viewY(0.0), viewZ(0.0), orbitRadius(0.0), 
+    upX(0.0), upY(1.0), upZ(0.0)
 {
+    std::cout << "[Camera] init" << std::endl;
+    
     this->ID = createID();
     //setup OSPRay camera with basic parameters
     this->oCamera = ospNewCamera("perspective");
@@ -21,11 +25,13 @@ Camera::Camera(int width, int height) :
 
 Camera::~Camera()
 {
-    ospRemoveParam(this->oCamera, "aspect");
-    ospRemoveParam(this->oCamera, "pos");
-    ospRemoveParam(this->oCamera, "dir");
-    ospRemoveParam(this->oCamera, "up");
+    std::cout << "[Camera] Deleting Camera" << std::endl;
+    // ospRemoveParam(this->oCamera, "aspect");
+    // ospRemoveParam(this->oCamera, "pos");
+    // ospRemoveParam(this->oCamera, "dir");
+    // ospRemoveParam(this->oCamera, "up");
     ospRelease(this->oCamera);
+    std::cout << "[Camera] Deleted Camera" << std::endl;
 }
 
 void Camera::setOrbitRadius(float radius)
@@ -106,8 +112,8 @@ void Camera::setRegion(float top, float right, float bottom, float left)
     // setRegion(1, 0.5, 0.5, 0)
     float upperRight[] = {right, top};
     float lowerLeft[] = {left, bottom};
-    ospSet2fv(this->oCamera, "imageStart", OSP_VEC2F, lowerLeft);
-    ospSet2fv(this->oCamera, "imageEnd", OSP_VEC2F, upperRight);
+    ospSetParam(this->oCamera, "imageStart", OSP_VEC2F, lowerLeft);
+    ospSetParam(this->oCamera, "imageEnd", OSP_VEC2F, upperRight);
 }
 
 OSPCamera Camera::asOSPRayObject()

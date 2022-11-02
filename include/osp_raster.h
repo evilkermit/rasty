@@ -19,10 +19,12 @@ namespace rasty{
     class Raster;
 
     class Camera; 
-    
+
+    class Renderer; 
+
     class TransferFunction;
 
-    void rastyInit(int *argc, const char **argv);
+    void rastyInit(int argc, const char **argv);
 
     std::string createID();
 } 

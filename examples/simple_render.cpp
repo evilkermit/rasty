@@ -24,6 +24,7 @@
 #include "Raster.h"
 #include "Camera.h"
 #include "DataFile.h"
+#include "Renderer.h"
 #include <osp_raster.h>
 
 
@@ -36,12 +37,23 @@ using namespace rkcommon::math;
 int main(int argc, const char **argv)
 {
 
-
-  rasty::rastyInit(&argc, argv);
+  std::cout<< "Starting OSPRay" << std::endl;
+  rasty::rastyInit(argc, argv);
   std::string filename = "../data/LFBB.tiff";
-  {
-    rasty::Raster *raster = new rasty::Raster(filename);
-    rasty::Camera *camera = new rasty::Camera(1024, 1024); // (width, height)
+  rasty::Raster *raster = new rasty::Raster(filename);
+  rasty::Camera *camera = new rasty::Camera(512, 512); // (width, height)
+  camera->setPosition(0, 0, 300);
+  camera->setView(0,0,0);
+  // camera->setUpVector(0, 0, 1);
+  
+  rasty::Renderer *renderer = new rasty::Renderer();
+  renderer->setRaster(raster);
+  renderer->setBackgroundColor(255,255,255,255);
+  renderer->setCamera(camera);
+  renderer->addLight();
+  renderer->renderImage("LFBB.png");
+  std::cout << "fully done" << std::endl;
+
   // image size
   // vec2i imgSize;
   // imgSize.x = 1024; // width
@@ -88,70 +100,71 @@ int main(int argc, const char **argv)
 
 
     // put the model into a group (collection of models)
-    ospray::cpp::Group group;
-    group.setParam("geometry", ospray::cpp::CopiedData(raster->asOSPRayObject()));
-    group.commit();
+    // ospray::cpp::Group group;
+    // group.setParam("geometry", ospray::cpp::CopiedData(raster->asOSPRayObject()));
+    // group.commit();
 
-    // put the group into an instance (give the group a world transform)
-    ospray::cpp::Instance instance(group);
-    instance.commit();
+    // // put the group into an instance (give the group a world transform)
+    // ospray::cpp::Instance instance(group);
+    // instance.commit();
 
-    // put the instance in the world
-    ospray::cpp::World world;
-    world.setParam("instance", ospray::cpp::CopiedData(instance));
+    // // put the instance in the world
+    // ospray::cpp::World world;
+    // world.setParam("instance", ospray::cpp::CopiedData(instance));
 
-    // create and setup light for Ambient Occlusion
-    ospray::cpp::Light light("sunSky");
-    light.commit();
+    // // create and setup light for Ambient Occlusion
+    // ospray::cpp::Light light("sunSky");
+    // light.commit();
 
-    world.setParam("light", ospray::cpp::CopiedData(light));
-    world.commit();
+    // world.setParam("light", ospray::cpp::CopiedData(light));
+    // world.commit();
 
-    // create renderer, choose Scientific Visualization renderer
-    ospray::cpp::Renderer renderer("scivis");
+    // // create renderer, choose Scientific Visualization renderer
+    // ospray::cpp::Renderer renderer("scivis");
 
-    // complete setup of renderer
-    renderer.setParam("aoSamples", 1);
-    renderer.setParam("backgroundColor", vec4f(135,206,235,0.5)); // white, transparent
-    renderer.commit();
+    // // complete setup of renderer
+    // renderer.setParam("aoSamples", 1);
+    // renderer.setParam("backgroundColor", vec4f(135,206,235,0.5)); // white, transparent
+    // renderer.commit();
 
     // create and setup framebuffer
-    ospray::cpp::FrameBuffer framebuffer(
-        imgSize.x, imgSize.y, OSP_FB_SRGBA, OSP_FB_COLOR | OSP_FB_ACCUM);
-    framebuffer.clear();
+    // ospray::cpp::FrameBuffer framebuffer(
+    //     imgSize.x, imgSize.y, OSP_FB_SRGBA, OSP_FB_COLOR | OSP_FB_ACCUM);
+    // framebuffer.clear();
 
-    // render one frame
-    framebuffer.renderFrame(renderer, camera->asOSPRayObject(), world);
+    // // render one frame
+    // framebuffer.renderFrame(renderer->oRenderer, camera->asOSPRayObject(), renderer->oWorld);
 
-    // access framebuffer and write its content as PPM file
-    uint32_t *fb = (uint32_t *)framebuffer.map(OSP_FB_COLOR);
-    rkcommon::utility::writePPM("firstFrameCpp.ppm", imgSize.x, imgSize.y, fb);
-    framebuffer.unmap(fb);
-    std::cout << "rendering initial frame to firstFrameCpp.ppm" << std::endl;
+    // // access framebuffer and write its content as PPM file
+    // uint32_t *fb = (uint32_t *)framebuffer.map(OSP_FB_COLOR);
+    // rkcommon::utility::writePPM("firstFrameCpp.ppm", imgSize.x, imgSize.y, fb);
+    // framebuffer.unmap(fb);
+    // std::cout << "rendering initial frame to firstFrameCpp.ppm" << std::endl;
 
-    // render 10 more frames, which are accumulated to result in a better
-    // converged image
-    for (int frames = 0; frames < 10; frames++)
-      framebuffer.renderFrame(renderer, camera, world);
+    // // render 10 more frames, which are accumulated to result in a better
+    // // converged image
+    // for (int frames = 0; frames < 10; frames++){
+    //   framebuffer.renderFrame(renderer->oRenderer, camera->asOSPRayObject(), renderer->oWorld);
+    //   std::cout<<frames<<std::endl;
+    // }
 
-    fb = (uint32_t *)framebuffer.map(OSP_FB_COLOR);
-    rkcommon::utility::writePPM(
-        "accumulatedFrameCpp.ppm", imgSize.x, imgSize.y, fb);
-    framebuffer.unmap(fb);
-    std::cout << "rendering 10 accumulated frames to accumulatedFrameCpp.ppm"
-              << std::endl;
+    // fb = (uint32_t *)framebuffer.map(OSP_FB_COLOR);
+    // rkcommon::utility::writePPM(
+    //     "accumulatedFrameCpp.ppm", imgSize.x, imgSize.y, fb);
+    // framebuffer.unmap(fb);
+    // std::cout << "rendering 10 accumulated frames to accumulatedFrameCpp.ppm"
+    //           << std::endl;
 
-    ospray::cpp::PickResult res =
-        framebuffer.pick(renderer, camera, world, 0.5f, 0.5f);
+    // ospray::cpp::PickResult res =
+    //     framebuffer.pick(renderer->oRenderer, camera->asOSPRayObject(), renderer->oWorld, 0.5f, 0.5f);
 
-    if (res.hasHit) {
-      std::cout << "picked geometry [instance: " << res.instance.handle()
-                << ", model: " << res.model.handle()
-                << ", primitive: " << res.primID << "]" << std::endl;
-    }
-  }
-
+    // if (res.hasHit) {
+    //   std::cout << "picked geometry [instance: " << res.instance.handle()
+    //             << ", model: " << res.model.handle()
+    //             << ", primitive: " << res.primID << "]" << std::endl;
+    // }
+  std::cout << "osp Shutdown" << std::endl;
   ospShutdown();
-
+  std::cout << "done" << std::endl;
   return 0;
 }
