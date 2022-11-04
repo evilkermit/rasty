@@ -211,9 +211,9 @@ void DataFile::readTIFF()
 
             /* get the elevation value */
             double z = this->data[(x * this->width) +y];
-            this->vertex.push_back(rkcommon::math::vec3d(currX, currY, z));
+            this->vertex.push_back(rkcommon::math::vec3d(currX,currY,z));
             // this->vertex.push_back(rkcommon::math::vec3d(x, y, z));
-            this->color.push_back(rkcommon::math::vec4f(0.9f, 0.5f, 0.5f, 1.f));
+            this->color.push_back(rkcommon::math::vec4f(255.f, 1.f, 1.f, 10.f));
 
             /* create indices for vertex array */
             if (x+1 < this->height && y+1 < this->width) {
@@ -221,7 +221,8 @@ void DataFile::readTIFF()
                 int tl = (x * this->width) + y;
                 int tr = (x * this->width) + (y+1);
                 int bl = ((x+1) * this->width) + y;
-                this->index.push_back(rkcommon::math::vec3ui(tl,tr,br)); // top right triangle
+                this->index.push_back(rkcommon::math::vec3ui(tl,br,tr)); // top right triangle
+                // this->index.push_back(rkcommon::math::vec3ui(tl,bl,br)); // bottom left triangle
                 this->index.push_back(rkcommon::math::vec3ui(tl,bl,br)); // bottom left triangle
             }
         }

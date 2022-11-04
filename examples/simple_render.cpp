@@ -42,13 +42,16 @@ int main(int argc, const char **argv)
   std::string filename = "../data/LFBB.tiff";
   rasty::Raster *raster = new rasty::Raster(filename);
   rasty::Camera *camera = new rasty::Camera(512, 512); // (width, height)
-  camera->setPosition(0, 0, 300);
-  camera->setView(0,0,0);
+  camera->setPosition(1,-10,-5);
+  // camera->setView(0,-1,0);
+  // camera->setPosition(0,0,1200);
+  // camera->setView(0,0,-1);
+  camera->centerView();
   // camera->setUpVector(0, 0, 1);
   
   rasty::Renderer *renderer = new rasty::Renderer();
   renderer->setRaster(raster);
-  renderer->setBackgroundColor(255,255,255,255);
+  // renderer->setBackgroundColor(255,255,255,255);
   renderer->setCamera(camera);
   renderer->addLight();
   renderer->renderImage("LFBB.png");

@@ -119,13 +119,13 @@ std::vector<rkcommon::math::vec3f> Raster::getBounds()
     std::vector<rkcommon::math::vec3f> bounds{
         rkcommon::math::vec3f( // min
             this->dataFile->originX, 
-            this->dataFile->originY, 
-            this->dataFile->minVal
+            this->dataFile->originY,
+            0//this->dataFile->minVal
             ), 
         rkcommon::math::vec3f( // max
             this->dataFile->originX + (this->dataFile->width * this->dataFile->pixelSizeX), 
-            this->dataFile->originY + (this->dataFile->height * this->dataFile->pixelSizeY), 
-            this->dataFile->maxVal
+            this->dataFile->originY + (this->dataFile->height * this->dataFile->pixelSizeY),
+            0//this->dataFile->maxVal
         )
     };
     return bounds;
@@ -136,7 +136,7 @@ rkcommon::math::affine3f Raster::getCenterTransformation()
     const float spacing = 2.5f;
     std::vector<rkcommon::math::vec3f> bounds = this->getBounds();
     
-    rkcommon::math::vec3f center = (bounds[0] + bounds[1]) / 2.0f;
+    rkcommon::math::vec3f center = (bounds[0] + bounds[1]) * 0.5f;
     return rkcommon::math::affine3f::translate(-center);
 }
 

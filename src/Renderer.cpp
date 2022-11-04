@@ -128,6 +128,8 @@ void Renderer::setRaster(Raster *r)
     this->lastRenderType = "geometry";
 
     this->oMaterial = ospNewMaterial("", "obj");
+    // ospSetVec3f(this->oModel, "tf", 255,0,0);
+
     ospCommit(this->oMaterial);
 
     this->oModel = ospNewGeometricModel(r->asOSPRayObject());
@@ -145,8 +147,8 @@ void Renderer::addLight()
     if(this->lights.size() == 0) {
         // create a new directional light
         OSPLight light = ospNewLight("distant");
-        //float direction[] = {0, -1, 1};
-        //ospSet3fv(light, "direction", direction);
+        // float direction[] = {0, -1, 1};
+        // ospSetVec3f(light, "direction", 0, -1, 1);
         // set the apparent size of the light in degrees
         // 0.53 approximates the Sun
         ospSetFloat(light, "angularDiameter", 0.53);
@@ -369,9 +371,9 @@ void Renderer::render()
     this->oInstance = ospNewInstance(this->oGroup);
         // spacing * vec3f(i.x, h, i.y)
     std::cout << this->rastyRaster->getCenterTransformation() << std::endl;
-    ospSetParam(this->oInstance, "transform", OSP_AFFINE3F, this->rastyRaster->getCenterTransformation());
-
+    // ospSetParam(this->oInstance, "transform", OSP_AFFINE3F, this->rastyRaster->getCenterTransformation());
     ospCommit(this->oInstance);
+
     ospRelease(this->oGroup);
     std::cout << "[Renderer] create world" << std::endl;
 
@@ -413,7 +415,10 @@ void Renderer::render()
     ospResetAccumulation(this->oFrameBuffer);
 
     std::cout << "[Renderer] render frame" << std::endl;
+    // for (int frames = 0; frames < 10; frames++){
+
     ospRenderFrameBlocking(this->oFrameBuffer, this->oRenderer, this->oCamera, this->oWorld);
+    // }
     std::cout << "[Renderer] done rendering" << std::endl;
 }
 
