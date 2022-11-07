@@ -23,6 +23,8 @@ namespace rasty{
     class Renderer; 
 
     class TransferFunction;
+    
+    class ArcballCamera;
 
     void rastyInit(int argc, const char **argv);
 

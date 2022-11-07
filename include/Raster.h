@@ -23,7 +23,7 @@ namespace rasty
             ~Raster();
 
 
-            std::vector<rkcommon::math::vec3f> getBounds();
+            rkcommon::math::box3f getBounds();
             rkcommon::math::vec2f getHW();
             rkcommon::math::affine3f getCenterTransformation();
 

@@ -14,12 +14,13 @@ Camera::Camera(int width, int height) :
     upX(0.0), upY(1.0), upZ(0.0)
 {
     std::cout << "[Camera] init" << std::endl;
-    
+    this->transform = rkcommon::math::affine3f::translate(rkcommon::math::vec3f(0.0, 0.0, 0.0));
     this->ID = createID();
     //setup OSPRay camera with basic parameters
     this->oCamera = ospNewCamera("perspective");
     this->updateOSPRayPosition();
     ospSetFloat(this->oCamera, "aspect", (float)this->imageWidth/imageHeight);
+    // ospSetFloat(this->oCamera, "fov", 120);
     ospCommit(this->oCamera);
 }
 
@@ -65,6 +66,12 @@ void Camera::setView(float x, float y, float z)
     this->updateOSPRayPosition();
 }
 
+void Camera::setTransform(rkcommon::math::affine3f transform)
+{
+    this->transform = transform;
+    this->updateOSPRayPosition();
+}
+
 void Camera::centerView()
 {
     //center the camera's viewpoint on the center of a volume
@@ -88,8 +95,11 @@ int Camera::getImageHeight()
     return this->imageHeight;
 }
 
+
+
 void Camera::updateOSPRayPosition()
 {
+    std::cout<< "[Camera] updateOSPRayPosition" << std::endl;
     //update OSPRay camera
     float position[] = {this->xPos, this->yPos, this->zPos};
     ospSetParam(this->oCamera, "position", OSP_VEC3F, position);
@@ -99,6 +109,8 @@ void Camera::updateOSPRayPosition()
 
     float up[] = {this->upX, this->upY, this->upZ};
     ospSetParam(this->oCamera, "up", OSP_VEC3F, up);
+
+    ospSetParam(this->oCamera, "transform", OSP_AFFINE3F, this->transform);
     ospCommit(this->oCamera);
 }
 

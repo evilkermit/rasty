@@ -44,7 +44,7 @@ namespace rasty
             float *data;
 
             /* basic representation */
-            std::vector<rkcommon::math::vec3d> vertex;
+            std::vector<rkcommon::math::vec3f> vertex;
             std::vector<rkcommon::math::vec4f> color;
             std::vector<rkcommon::math::vec3ui> index;
         

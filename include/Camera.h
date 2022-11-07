@@ -5,6 +5,7 @@
 #include <Raster.h>
 
 #include <ospray/ospray.h>
+#include "ospray/ospray_cpp/ext/rkcommon.h"
 
 #include <string>
 
@@ -20,6 +21,7 @@ namespace rasty {
             void setOrbitRadius(float radius);
             void setView(float x, float y, float z);
             void setImageSize(int width, int height);
+            void setTransform(rkcommon::math::affine3f transform);
             int getImageWidth();
             int getImageHeight();
             // no longer needed as the volume is centered automatically
@@ -48,7 +50,7 @@ namespace rasty {
             float orbitRadius;
             int imageWidth;
             int imageHeight;
-
+            rkcommon::math::affine3f transform;
             OSPCamera oCamera;
 
             void updateOSPRayPosition();

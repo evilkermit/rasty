@@ -202,33 +202,49 @@ void DataFile::readTIFF()
     this->vertex.reserve(this->numValues);
     this->color.reserve(this->numValues);
     this->index.reserve(numIndices);
-    for (int x = 0; x < this->height; x++) {
-        for (int y = 0; y < this->width; y++) {
+    // unsigned long int tmp = this->height;
+    // this->height = this->width;
+    // this->width = tmp;
+    for (int y = 0; y < this->height; y++) {
+        for (int x = 0; x < this->width; x++) {
 
             /* get current coordinate */
-            double currY = this->originY + (x * this->pixelSizeY);
-            double currX = this->originX + (y * this->pixelSizeX);
+            double currY = this->originY + (y * this->pixelSizeY);
+            double currX = this->originX + (x * this->pixelSizeX);
 
             /* get the elevation value */
-            double z = this->data[(x * this->width) +y];
-            this->vertex.push_back(rkcommon::math::vec3d(currX,currY,z));
-            // this->vertex.push_back(rkcommon::math::vec3d(x, y, z));
-            this->color.push_back(rkcommon::math::vec4f(255.f, 1.f, 1.f, 10.f));
+            double z = this->data[(y * this->width) + x];
+            this->vertex.push_back(rkcommon::math::vec3f((float)currX,z/10000,(float)currY));
+            // this->vertex.push_back(rkcommon::math::vec3d(x, 0, y));
+            this->color.push_back(rkcommon::math::vec4f(0.9f, 0.5f, 0.5f, 1.0f));
 
             /* create indices for vertex array */
-            if (x+1 < this->height && y+1 < this->width) {
-                int br = ((x+1) * this->width) + (y+1);
-                int tl = (x * this->width) + y;
-                int tr = (x * this->width) + (y+1);
-                int bl = ((x+1) * this->width) + y;
-                this->index.push_back(rkcommon::math::vec3ui(tl,br,tr)); // top right triangle
-                // this->index.push_back(rkcommon::math::vec3ui(tl,bl,br)); // bottom left triangle
+            if (y+1 < this->height && x+1 < this->width) {
+                int tl = (y * this->width) + x;
+                int bl = ((y+1) * this->width) + x;
+                int br = ((y+1) * this->width) + (x+1);
+                int tr = (y * this->width) + (x+1);
                 this->index.push_back(rkcommon::math::vec3ui(tl,bl,br)); // bottom left triangle
+                this->index.push_back(rkcommon::math::vec3ui(tl,br,tr)); // top right triangle
             }
         }
     }
 }
+    // off1 = !off1;
+// this->index.push_back(rkcommon::math::vec3ui(tl,tr,bl)); // top right triangle
+// this->index.push_back(rkcommon::math::vec3ui(bl,tr,br)); // bottom left triangle
+// this->index.push_back(rkcommon::math::vec3ui(tl,bl,br)); // bottom left triangle
+// this->index.push_back(rkcommon::math::vec4ui(tl,bl,br,tr)); // bottom left triangle
+// if (off2){
+//     this->index.push_back(rkcommon::math::vec3ui(tl,tr,bl)); // bottom left triangle
+//     this->index.push_back(rkcommon::math::vec3ui(bl,tr,br)); // top right triangle
+// } else {
+//     this->index.push_back(rkcommon::math::vec3ui(tl,tr,br)); // top right triangle
+//     this->index.push_back(rkcommon::math::vec3ui(tl,br,bl)); // bottom left triangle
+// }
 
+// std::cout<<"(x,y,i) = ("<<x<<","<<y<<","<<(y * this->width) + x<<")"<<" ; " << rkcommon::math::vec3ui(tl,bl,br) << " ; " << rkcommon::math::vec3ui(tl,tr,br)<<std::endl;
+// off2 = !off2;
 FILETYPE DataFile::getFiletype()
 {
     std::stringstream ss;

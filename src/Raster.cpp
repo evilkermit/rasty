@@ -114,18 +114,20 @@ rkcommon::math::vec2f Raster::getHW()
     return rkcommon::math::vec2f(this->dataFile->height, this->dataFile->width);
 }
 
-std::vector<rkcommon::math::vec3f> Raster::getBounds() 
+rkcommon::math::box3f Raster::getBounds() 
 {
-    std::vector<rkcommon::math::vec3f> bounds{
+    rkcommon::math::box3f bounds{
         rkcommon::math::vec3f( // min
             this->dataFile->originX, 
-            this->dataFile->originY,
-            0//this->dataFile->minVal
+            0,
+            this->dataFile->originY
+            // 0//this->dataFile->minVal
             ), 
         rkcommon::math::vec3f( // max
             this->dataFile->originX + (this->dataFile->width * this->dataFile->pixelSizeX), 
-            this->dataFile->originY + (this->dataFile->height * this->dataFile->pixelSizeY),
-            0//this->dataFile->maxVal
+            0,
+            this->dataFile->originY + (this->dataFile->height * this->dataFile->pixelSizeY)
+            // 0//this->dataFile->maxVal
         )
     };
     return bounds;
@@ -133,11 +135,15 @@ std::vector<rkcommon::math::vec3f> Raster::getBounds()
 
 rkcommon::math::affine3f Raster::getCenterTransformation()
 {
-    const float spacing = 2.5f;
-    std::vector<rkcommon::math::vec3f> bounds = this->getBounds();
-    
-    rkcommon::math::vec3f center = (bounds[0] + bounds[1]) * 0.5f;
+    const float spacing = 100.f;
+    rkcommon::math::box3f bounds = this->getBounds();
+    std::cout << "bounds: " << bounds << std::endl;
+    rkcommon::math::vec3f center = (bounds.lower + bounds.upper) * 0.5f;
+    // rkcommon::math::vec3f center(0,0,0);
+    std::cout<<"center: "<<center.x<<" "<<center.y<<" "<<center.z<<std::endl;
+    std::cout <<"transformation"<<rkcommon::math::affine3f::translate(-center) * rkcommon::math::affine3f::scale(rkcommon::math::vec3f(spacing,1/spacing,spacing)) <<std::endl;
     return rkcommon::math::affine3f::translate(-center);
+            rkcommon::math::affine3f::scale(rkcommon::math::vec3f(spacing,1,spacing));
 }
 
 OSPGeometry Raster::asOSPRayObject()

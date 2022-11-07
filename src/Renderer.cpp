@@ -146,12 +146,12 @@ void Renderer::addLight()
     // currently the renderer will hold only one light
     if(this->lights.size() == 0) {
         // create a new directional light
-        OSPLight light = ospNewLight("distant");
+        OSPLight light = ospNewLight("ambient");
         // float direction[] = {0, -1, 1};
-        // ospSetVec3f(light, "direction", 0, -1, 1);
+        // ospSetVec3f(light, "direction", 0, -1, -1);
         // set the apparent size of the light in degrees
         // 0.53 approximates the Sun
-        ospSetFloat(light, "angularDiameter", 0.53);
+        // ospSetFloat(light, "angularDiameter", 0.53);
         ospCommit(light);
         this->lights.push_back(light);
     }
@@ -371,7 +371,7 @@ void Renderer::render()
     this->oInstance = ospNewInstance(this->oGroup);
         // spacing * vec3f(i.x, h, i.y)
     std::cout << this->rastyRaster->getCenterTransformation() << std::endl;
-    // ospSetParam(this->oInstance, "transform", OSP_AFFINE3F, this->rastyRaster->getCenterTransformation());
+    ospSetParam(this->oInstance, "transform", OSP_AFFINE3F, this->rastyRaster->getCenterTransformation());
     ospCommit(this->oInstance);
 
     ospRelease(this->oGroup);
@@ -402,7 +402,6 @@ void Renderer::render()
     // ospSetObject(this->oRenderer, "model", this->oModel);
     // ospSetObject(this->oRenderer, "camera", this->oCamera);
     ospCommit(this->oRenderer);
-
     //set up framebuffer
     this->cameraWidth = this->rastyCamera->getImageWidth();
     this->cameraHeight = this->rastyCamera->getImageHeight();
@@ -415,10 +414,9 @@ void Renderer::render()
     ospResetAccumulation(this->oFrameBuffer);
 
     std::cout << "[Renderer] render frame" << std::endl;
-    // for (int frames = 0; frames < 10; frames++){
-
-    ospRenderFrameBlocking(this->oFrameBuffer, this->oRenderer, this->oCamera, this->oWorld);
-    // }
+    for (int frames = 0; frames < 30; frames++){
+        ospRenderFrameBlocking(this->oFrameBuffer, this->oRenderer, this->oCamera, this->oWorld);
+    }
     std::cout << "[Renderer] done rendering" << std::endl;
 }
 
