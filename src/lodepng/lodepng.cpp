@@ -521,13 +521,13 @@ typedef struct HuffmanTree
 /*
 static void HuffmanTree_draw(HuffmanTree* tree)
 {
-  std::cout << "tree. length: " << tree->numcodes << " maxbitlen: " << tree->maxbitlen << std::endl;
+ //std::cout << "tree. length: " << tree->numcodes << " maxbitlen: " << tree->maxbitlen << std::endl;
   for(size_t i = 0; i != tree->tree1d.size; ++i)
   {
     if(tree->lengths.data[i])
-      std::cout << i << " " << tree->tree1d.data[i] << " " << tree->lengths.data[i] << std::endl;
+     //std::cout << i << " " << tree->tree1d.data[i] << " " << tree->lengths.data[i] << std::endl;
   }
-  std::cout << std::endl;
+ //std::cout << std::endl;
 }*/
 
 static void HuffmanTree_init(HuffmanTree* tree)
@@ -3545,14 +3545,14 @@ void lodepng_color_profile_init(LodePNGColorProfile* profile)
 /*function used for debug purposes with C++*/
 /*void printColorProfile(LodePNGColorProfile* p)
 {
-  std::cout << "colored: " << (int)p->colored << ", ";
-  std::cout << "key: " << (int)p->key << ", ";
-  std::cout << "key_r: " << (int)p->key_r << ", ";
-  std::cout << "key_g: " << (int)p->key_g << ", ";
-  std::cout << "key_b: " << (int)p->key_b << ", ";
-  std::cout << "alpha: " << (int)p->alpha << ", ";
-  std::cout << "numcolors: " << (int)p->numcolors << ", ";
-  std::cout << "bits: " << (int)p->bits << std::endl;
+ //std::cout << "colored: " << (int)p->colored << ", ";
+ //std::cout << "key: " << (int)p->key << ", ";
+ //std::cout << "key_r: " << (int)p->key_r << ", ";
+ //std::cout << "key_g: " << (int)p->key_g << ", ";
+ //std::cout << "key_b: " << (int)p->key_b << ", ";
+ //std::cout << "alpha: " << (int)p->alpha << ", ";
+ //std::cout << "numcolors: " << (int)p->numcolors << ", ";
+ //std::cout << "bits: " << (int)p->bits << std::endl;
 }*/
 
 /*Returns how many bits needed to represent given value (max 8 bit)*/

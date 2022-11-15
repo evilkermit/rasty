@@ -22,16 +22,17 @@ namespace rasty
             Raster(std::string filename);
             ~Raster();
 
-
             rkcommon::math::box3f getBounds();
             rkcommon::math::vec2f getHW();
             rkcommon::math::affine3f getCenterTransformation();
+
+            void setColor(std::vector<rkcommon::math::vec4f> color);
 
             OSPGeometry asOSPRayObject();
 
             std::string ID;
             
-        private:
+        // private:
             DataFile *dataFile;
             TransferFunction *transferFunction;
             rkcommon::math::affine3f centerTranslation;

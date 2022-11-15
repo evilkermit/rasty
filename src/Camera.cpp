@@ -13,7 +13,7 @@ Camera::Camera(int width, int height) :
     viewX(0.0), viewY(0.0), viewZ(0.0), orbitRadius(0.0), 
     upX(0.0), upY(1.0), upZ(0.0)
 {
-    std::cout << "[Camera] init" << std::endl;
+   //std::cout << "[Camera] init" << std::endl;
     this->transform = rkcommon::math::affine3f::translate(rkcommon::math::vec3f(0.0, 0.0, 0.0));
     this->ID = createID();
     //setup OSPRay camera with basic parameters
@@ -26,13 +26,13 @@ Camera::Camera(int width, int height) :
 
 Camera::~Camera()
 {
-    std::cout << "[Camera] Deleting Camera" << std::endl;
+   //std::cout << "[Camera] Deleting Camera" << std::endl;
     // ospRemoveParam(this->oCamera, "aspect");
     // ospRemoveParam(this->oCamera, "pos");
     // ospRemoveParam(this->oCamera, "dir");
     // ospRemoveParam(this->oCamera, "up");
     ospRelease(this->oCamera);
-    std::cout << "[Camera] Deleted Camera" << std::endl;
+   //std::cout << "[Camera] Deleted Camera" << std::endl;
 }
 
 void Camera::setOrbitRadius(float radius)
@@ -99,7 +99,7 @@ int Camera::getImageHeight()
 
 void Camera::updateOSPRayPosition()
 {
-    std::cout<< "[Camera] updateOSPRayPosition" << std::endl;
+    // //std::cout<< "[Camera] updateOSPRayPosition" << std::endl;
     //update OSPRay camera
     float position[] = {this->xPos, this->yPos, this->zPos};
     ospSetParam(this->oCamera, "position", OSP_VEC3F, position);

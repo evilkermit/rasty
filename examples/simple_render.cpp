@@ -20,13 +20,16 @@
 #include <alloca.h>
 #include <vector>
 #include <string>
+#include <chrono>
 
 #include "Raster.h"
 #include "Camera.h"
 #include "DataFile.h"
 #include "Renderer.h"
+#include "Cbar.h"
 #include "ArcballCamera.h"
 #include <osp_raster.h>
+#include <time.h>
 
 #include "ospray/ospray.h"
 #include "ospray/ospray_cpp.h"
@@ -38,31 +41,70 @@ using namespace rkcommon::math;
 int main(int argc, const char **argv)
 {
 
+  std::string nc_filename = "../data/LFBB-interp.nc";
+  std::string geo_filename = "../data/LFBB.tiff";
+  std::string cmap_type = "base";
   rasty::rastyInit(argc, argv);
 
-  std::string filename = "../data/LFBB.tiff";
-  rasty::Raster *raster = new rasty::Raster(filename);
+  rasty::DataFile *ncFile = new rasty::DataFile();
+  ncFile->loadFromFile(nc_filename);
+  ncFile->loadVariable("Accumulated_Precipitation");
+  ncFile->loadTimeStep(1); 
+
+  rasty::Cbar *cbar = new rasty::Cbar(cmap_type);
+
+  rasty::Raster *raster = new rasty::Raster(geo_filename);
 
   rasty::Renderer *renderer = new rasty::Renderer();
   renderer->setRaster(raster);
-  
+  renderer->setCbar(cbar);
+  renderer->setData(ncFile);
+
   rasty::Camera *camera = new rasty::Camera(1024, 1024); // (width, height)
-  // camera->setPosition(1.5,1.5,1.5);
-  camera->setPosition(.5,.5,.5);
-  camera->setView(-1,-1,-1);
+  // camera->setPosition(0,1.5,1.5);
+  camera->setPosition(0,.5,.5);
+  camera->setView(0,-1,-1);
+
+  renderer->setCamera(camera);
+  renderer->addLight();
+  std::string outdir = "outfiles/";
+  size_t t = 10;
+  int png_size = std::to_string(ncFile->timeDim).length();
+  float avg_time = 0;
+  int n = 1;
+
+  for (int t = 0; t < ncFile->timeDim; t++) {
+    std::string png_num = std::to_string(t);
+    png_num.insert(png_num.begin(), png_size - png_num.length(), '0');
+    std::string png_filename = outdir+"LFBB-"+png_num+".png";
+
+    auto start = std::chrono::high_resolution_clock::now();
+    camera->
+    ncFile->loadTimeStep(t);
+    renderer->setData(ncFile);
+    renderer->renderImage(png_filename);
+    
+    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( 
+            std::chrono::high_resolution_clock::now()-start 
+    ).count();
+    avg_time = avg_time + (1/n)*(diff - avg_time);
+
+    std::cout <<"["<<t<<"] avg render time = "<<avg_time<<" ms"<< std::endl;
+
+  }
+  // renderer->renderImage(png_filename);
+
+  ospShutdown();
+  return 0;
+}
   // camera->setUpVector(1,0,0);
+  
   // camera->setTransform(
   // //   affine3f::translate(vec3f(0, 0, 0))+
   //   raster->getCenterTransformation()
   //   );
 
-  renderer->setCamera(camera);
-  renderer->addLight();
-  renderer->renderImage("LFBB.png");
 
-  ospShutdown();
-  return 0;
-}
 
 /*
 #include <errno.h>
@@ -75,15 +117,7 @@ int main(int argc, const char **argv)
 #include <windows.h>
 #else
 #include <alloca.h>
-#endif
-
-#include <vector>
-
-#include "ospray/ospray_cpp.h"
-#include "ospray/ospray_cpp/ext/rkcommon.h"
-#include "rkcommon/utility/SaveImage.h"
-
-using namespace rkcommon::math;
+#endifand
 
 int main(int argc, const char **argv)
 {
@@ -161,8 +195,8 @@ int main(int argc, const char **argv)
                 int tr = (y * width) + (x+1);
                 index.push_back(rkcommon::math::vec3ui(tl,bl,br)); // bottom left triangle
                 index.push_back(rkcommon::math::vec3ui(tl,br,tr)); // top right triangle
-                std::cout<<rkcommon::math::vec3ui(tl,bl,br)<<std::endl;
-                std::cout<<rkcommon::math::vec3ui(tl,br,tr)<<std::endl;
+                //std::cout<<rkcommon::math::vec3ui(tl,bl,br)<<std::endl;
+                //std::cout<<rkcommon::math::vec3ui(tl,br,tr)<<std::endl;
             }
         }
     }
@@ -256,7 +290,7 @@ int main(int argc, const char **argv)
     uint32_t *fb = (uint32_t *)framebuffer.map(OSP_FB_COLOR);
     rkcommon::utility::writePPM("firstFrameCpp.ppm", imgSize.x, imgSize.y, fb);
     framebuffer.unmap(fb);
-    std::cout << "rendering initial frame to firstFrameCpp.ppm" << std::endl;
+   //std::cout << "rendering initial frame to firstFrameCpp.ppm" << std::endl;
 
     // render 10 more frames, which are accumulated to result in a better
     // converged image
@@ -267,14 +301,14 @@ int main(int argc, const char **argv)
     rkcommon::utility::writePPM(
         "accumulatedFrameCpp.ppm", imgSize.x, imgSize.y, fb);
     framebuffer.unmap(fb);
-    std::cout << "rendering 10 accumulated frames to accumulatedFrameCpp.ppm"
+   //std::cout << "rendering 10 accumulated frames to accumulatedFrameCpp.ppm"
               << std::endl;
 
     ospray::cpp::PickResult res =
         framebuffer.pick(renderer, camera, world, 0.5f, 0.5f);
 
     if (res.hasHit) {
-      std::cout << "picked geometry [instance: " << res.instance.handle()
+     //std::cout << "picked geometry [instance: " << res.instance.handle()
                 << ", model: " << res.model.handle()
                 << ", primitive: " << res.primID << "]" << std::endl;
     }

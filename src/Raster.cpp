@@ -2,7 +2,7 @@
 #include "DataFile.h"
 #include "TransferFunction.h"
 // #include "osp_raster.h"
-#include<iostream>
+#include <iostream>
 #include <vector>
 #include <ospray/ospray.h>
 // #include <ospray/ospray_cpp.h>
@@ -20,12 +20,12 @@ namespace rasty
 
 Raster::Raster(std::string filename)
 {   
-    std::cout << "[Raster] Init" << std::endl;
+   //std::cout << "[Raster] Init" << std::endl;
     this->ID = createID();
-    std::cout << "[Raster] ID: " << this->ID << std::endl;
+   //std::cout << "[Raster] ID: " << this->ID << std::endl;
 
     /* load data from file */
-    std::cout << "[Raster] Creating DataFile Object" << std::endl;
+   //std::cout << "[Raster] Creating DataFile Object" << std::endl;
     this->dataFile = new rasty::DataFile();
     this->loadFromFile(filename);
 
@@ -38,7 +38,7 @@ Raster::Raster(std::string filename)
 
 Raster::~Raster()
 {
-    std::cout << "[Raster] Deleting Raster" << std::endl;
+   //std::cout << "[Raster] Deleting Raster" << std::endl;
     delete this->dataFile;
     this->dataFile = NULL;
 
@@ -53,12 +53,12 @@ Raster::~Raster()
     // ospRemoveParam(this->oVolume, "gridOrigin");
     // ospRemoveParam(this->oVolume, "transferFunction");
     // ospRelease(this->oVolume);
-    // std::cout << "[Raster] Releasing data" << std::endl;
+    ////std::cout << "[Raster] Releasing data" << std::endl;
     // ospRelease(this->oData);
-    std::cout << "[Raster] Releasing mesh" << std::endl;
+   //std::cout << "[Raster] Releasing mesh" << std::endl;
     
     ospRelease(this->oMesh);
-    std::cout << "[Raster] Deleted Raster" << std::endl;
+   //std::cout << "[Raster] Deleted Raster" << std::endl;
 
 }
 
@@ -66,6 +66,8 @@ Raster::~Raster()
 
 void Raster::init()
 {
+    ospRelease(this->oMesh);
+
     /* mesh:set up the mesh */
     this->oMesh = ospNewGeometry("mesh");
 
@@ -89,26 +91,17 @@ void Raster::init()
 
     ospCommit(this->oMesh);
 
-
-    
-
-    /* set up the material for the mesh */
-    // this->oMaterial = ospNewMaterial("", "obj"); // first argument no longer matters
-    // ospCommit(this->oMaterial);
-
-    /* create a geometric model */
-    // this->oModel = ospNewGeometricModel(this->oMesh);
-    // ospSetObject(this->oModel, "material", this->oMaterial);
-    // ospCommit(this->oModel);
-    // ospRelease(mesh);
-    // ospRelease(mat);
-    // ospSetObject(this->oModel, "material", material);
-    // ospSetObject(this->oModel, "transferFunction",
-            // this->transferFunction->asOSPObject());
-    // std::cout << "comiting volume model" << std::endl;
-    // ospCommit(this->oModel);
-    // std::cout << "done" << std::endl;
 }
+
+void Raster::setColor(std::vector<rkcommon::math::vec4f> color) {
+    this->dataFile->color = color;
+    OSPData data = ospNewSharedData1D(this->dataFile->color.data(), OSP_VEC4F, this->dataFile->color.size());
+    ospCommit(data);
+    ospSetObject(this->oMesh, "vertex.color", data);
+    ospRelease(data);
+    ospCommit(this->oMesh);
+}
+
 rkcommon::math::vec2f Raster::getHW()
 {
     return rkcommon::math::vec2f(this->dataFile->height, this->dataFile->width);
@@ -137,11 +130,11 @@ rkcommon::math::affine3f Raster::getCenterTransformation()
 {
     const float spacing = 100.f;
     rkcommon::math::box3f bounds = this->getBounds();
-    std::cout << "bounds: " << bounds << std::endl;
+   //std::cout << "bounds: " << bounds << std::endl;
     rkcommon::math::vec3f center = (bounds.lower + bounds.upper) * 0.5f;
     // rkcommon::math::vec3f center(0,0,0);
-    std::cout<<"center: "<<center.x<<" "<<center.y<<" "<<center.z<<std::endl;
-    std::cout <<"transformation"<<rkcommon::math::affine3f::translate(-center) * rkcommon::math::affine3f::scale(rkcommon::math::vec3f(spacing,1/spacing,spacing)) <<std::endl;
+    //std::cout<<"center: "<<center.x<<" "<<center.y<<" "<<center.z<<std::endl;
+   //std::cout <<"transformation"<<rkcommon::math::affine3f::translate(-center) * rkcommon::math::affine3f::scale(rkcommon::math::vec3f(spacing,1/spacing,spacing)) <<std::endl;
     return rkcommon::math::affine3f::translate(-center);
             rkcommon::math::affine3f::scale(rkcommon::math::vec3f(spacing,1,spacing));
 }

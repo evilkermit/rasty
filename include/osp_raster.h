@@ -8,15 +8,11 @@
 
 namespace rasty{
 
-    /* contains metadata about the data being requested
-     * This includes things like:
-     *  - filename
-     *  - dimensions
-     *  etc.
-     */
     class DataFile;
 
     class Raster;
+
+    class Cbar;
 
     class Camera; 
 

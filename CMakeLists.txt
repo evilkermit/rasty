@@ -24,10 +24,7 @@ FIND_PACKAGE(embree REQUIRED HINT ${embree_DIR})
 # FIND_PACKAGE(embree 3.2 REQUIRED)
 # FIND_PACKAGE(ospray REQUIRED)
 
-get_cmake_property(_variableNames VARIABLES)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
+
 
 # OPTION(USE_NETCDF "Enable NetCDF file reading" ON)
 OPTION(BUILD_EXAMPLES "Build example applications" ON)
@@ -45,25 +42,30 @@ SET(OSP_RASTER_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include"
 
 #USE_NETCDF adds netcdf includes/libs for data reading
 # IF(USE_NETCDF)
-#     # give cmake some hints to finding NetCDF - god knows it needs it
-#     SET(NETCDF_INCLUDE_DIR "/usr/include"
-#         CACHE FILEPATH "Path to NetCDF includes")
-#     SET(NETCDF_LIBRARY "/usr/lib/x86_64-linux-gnu/libnetcdf_c++4.so"
-#         CACHE FILEPATH "Path to NetCDF library")
-#     # set this else the findnetcdf won't look in system paths
-#     SET(NETCDF_USE_DEFAULT_PATHS ON)
+    # give cmake some hints to finding NetCDF - god knows it needs it
+SET(NETCDF_INCLUDE_DIR "/usr/include"
+    CACHE FILEPATH "Path to NetCDF includes")
+SET(NETCDF_LIBRARY "/usr/lib/x86_64-linux-gnu/libnetcdf_c++4.so"
+    CACHE FILEPATH "Path to NetCDF library")
+# set this else the findnetcdf won't look in system paths
+SET(NETCDF_USE_DEFAULT_PATHS ON)
 
-#     FIND_PACKAGE(NetCDF COMPONENTS CXX)
+FIND_PACKAGE(NetCDF COMPONENTS CXX)
 
-#     IF(NETCDF_FOUND)
-#         ADD_DEFINITIONS(-DOSP_RASTER_NETCDF)
-#         SET(OSP_RASTER_INCLUDE_DIRS ${OSP_RASTER_INCLUDE_DIRS}
-#             ${NETCDF_CXX_INCLUDE_DIRS})
-#         SET(OSP_RASTER_LIBS ${OSP_RASTER_LIBS} ${NETCDF_CXX_LIBRARIES})
-#     ELSE()
-#         MESSAGE(FATAL_ERROR
-#             "Requested NetCDF but the library could not be found")
-#     ENDIF()
+get_cmake_property(_variableNames VARIABLES)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+
+IF(NETCDF_FOUND)
+    ADD_DEFINITIONS(-DOSP_RASTER_NETCDF)
+    SET(OSP_RASTER_INCLUDE_DIRS ${OSP_RASTER_INCLUDE_DIRS}
+        ${NETCDF_CXX_INCLUDE_DIRS})
+    SET(OSP_RASTER_LIBS ${OSP_RASTER_LIBS} ${NETCDF_CXX_LIBRARIES})
+ELSE()
+    MESSAGE(FATAL_ERROR
+        "Requested NetCDF but the library could not be found")
+ENDIF()
 # ENDIF(USE_NETCDF)
 
 FILE(GLOB OSP_RASTER_SOURCES "src/*.cpp" "src/lodepng/*.cpp")

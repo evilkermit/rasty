@@ -3,7 +3,8 @@
 
 #include <string>
 #include <vector>
-
+#include <netcdf>
+#include <map>
 #include <osp_raster.h>
 #include "ospray/ospray_cpp/ext/rkcommon.h"
 
@@ -19,12 +20,17 @@ namespace rasty
             DataFile();
             ~DataFile();
             void loadFromFile(std::string filename);
+            void loadVariable(std::string varname); /* netcdf data only */
+            void loadTimeStep(size_t timestep); /* netcdf data only */
             void calculateStatistics();
             void printStatistics();
 
             std::string filename;
             FILETYPE filetype;
 
+            unsigned long int lonDim;
+            unsigned long int latDim;
+            unsigned long int timeDim;
             unsigned long int height;
             unsigned long int width;
             unsigned long int numValues;
@@ -43,16 +49,22 @@ namespace rasty
             float stdDev;
             float *data;
 
-            /* basic representation */
+            /* used for geo file loading */
             std::vector<rkcommon::math::vec3f> vertex;
             std::vector<rkcommon::math::vec4f> color;
             std::vector<rkcommon::math::vec3ui> index;
         
-
+            /* used for nc file loading */
+            std::multimap<std::string, netCDF::NcVar> varmap;
+            netCDF::NcFile *ncFile;
+            netCDF::NcVar ncVariable;
             bool statsCalculated;
+            bool ncLoaded;
+            bool varLoaded;
         private:
             FILETYPE getFiletype();
             void readTIFF();
+            void readNetCDF();
 
     }; 
 } 

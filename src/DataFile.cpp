@@ -11,77 +11,30 @@
 #include "gdal/gdal_priv.h"
 #include "gdal/cpl_conv.h"
 #include "ospray/ospray_cpp/ext/rkcommon.h"
-// #include <CGAL/property_map.h>
-// #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-// #include <CGAL/Projection_traits_xy_3.h>
-// #include <CGAL/Delaunay_triangulation_2.h>
-// #include <CGAL/Triangulation_vertex_base_with_info_2.h>
-// #include <CGAL/Triangulation_face_base_with_info_2.h>
-// #include <CGAL/boost/graph/graph_traits_Delaunay_triangulation_2.h>
-// #include <CGAL/boost/graph/copy_face_graph.h>
-// #include <CGAL/Point_set_3.h>
-// #include <CGAL/Point_set_3/IO.h>
-// #include <CGAL/compute_average_spacing.h>
-// #include <CGAL/Surface_mesh.h>
-// #include <CGAL/Polygon_mesh_processing/locate.h>
-// #include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
-// #include <CGAL/Polygon_mesh_processing/border.h>
-// #include <CGAL/Polygon_mesh_processing/remesh.h>
-// #include <boost/graph/adjacency_list.hpp>
-// #include <CGAL/boost/graph/split_graph_into_polylines.h>
-// #include <CGAL/IO/WKT.h>
-// #include <CGAL/Constrained_Delaunay_triangulation_2.h>
-// #include <CGAL/Constrained_triangulation_plus_2.h>
-// #include <CGAL/Polyline_simplification_2/simplify.h>
-// #include <CGAL/Polyline_simplification_2/Squared_distance_cost.h>
-// #include <CGAL/Classification.h>
-// #include <CGAL/Random.h>
 
+// for netcdf files
+#include <netcdf>
+#include <map>
 
 namespace rasty
 {
 
-// typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
-// typedef Kernel::FT FT;
-// typedef Kernel::Point_3 Point;
-// typedef Kernel::Vector_3 Vector;
-// typedef CGAL::Point_set_3<Point> Point_set;
-
-    // typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
-    // typedef CGAL::Projection_traits_xy_3<Kernel> Projection_traits;
-    // typedef Kernel::Point_2 Point_2;
-    // typedef Kernel::Point_3 Point_3;
-    // typedef Kernel::Segment_3 Segment_3;;
-
-    // typedef Kernel::FT FT;
-
-    // typedef Kernel::Vector_3 Vector;
-
-    // // Triangulated Irregular Network
-    // typedef CGAL::Delaunay_triangulation_2<Projection_traits> TIN;
-    // typedef CGAL::Surface_mesh<Point_3> Mesh;
-    // typedef CGAL::Point_set_3<Point_3> Point_set;
-    // typedef CGAL::Triangulation_vertex_base_with_info_2 <Point_set::Index, Projection_traits> Vbi;
-    // typedef CGAL::Triangulation_face_base_with_info_2 <int, Projection_traits> Fbi;
-    // typedef CGAL::Triangulation_data_structure_2<Vbi, Fbi> TDS;
-    // typedef CGAL::Delaunay_triangulation_2<Projection_traits, TDS> TIN_with_info;
-    // typedef Mesh::Vertex_index vertex_descriptor;
-    // typedef Mesh::Face_index face_descriptor;
-
-DataFile::DataFile(): statsCalculated(false){
-    std::cout << "[DataFile] Init" << std::endl;
+DataFile::DataFile(): 
+statsCalculated(false), ncLoaded(false), varLoaded(false)
+{
+   //std::cout << "[DataFile] Init" << std::endl;
     this->data = NULL;
 }
 
 DataFile::~DataFile(){
-    std::cout << "[DataFile] Deleting DataFile" << std::endl;
+   //std::cout << "[DataFile] Deleting DataFile" << std::endl;
 
     if (this->data != NULL){
         free(this->data);
     }
 
     this->data = NULL;
-    std::cout << "[DataFile] Deleted DataFile" << std::endl;
+   //std::cout << "[DataFile] Deleted DataFile" << std::endl;
 
 }
 
@@ -93,60 +46,97 @@ void DataFile::loadFromFile(std::string filename)
 
     if(this->filetype == UNKNOWN) {
         std::cerr << "Unknown filetype!" << std::endl;
+        throw std::exception();
     }
     else if (this->filetype == TIFF) {
         readTIFF();
     }
     else if (this->filetype == NETCDF) {
-        /* TODO */
+        readNetCDF();
     }
+    
         
-    // Mesh mesh;
-    // std::ifstream input(this->filename,std::ios_base::binary);
-    // if (!input)
-    // {
-    //     std::cerr << "[DataFile] Error: cannot read file " << this->filename << std::endl;
-    //     return;
-    // }
-
-    // std::cout << "[DataFile] Reading file " << this->filename << std::endl;
-    // CGAL::IO::read_PLY (input, mesh);
-    // input.close();
-
-    // std::cout<<"[DataFile] Number of points: "<< mesh.number_of_vertices() <<std::endl;
-    // std::cout<<"[DataFile] Number of faces: "<< mesh.number_of_faces() <<std::endl;
-    // std::cout<<"[DataFile] Number of edges: "<< mesh.number_of_edges() <<std::endl;
-    // this->numValues = mesh.number_of_vertices();
-
-
-    // std::cout << "[DataFile] Creating Vertices and Colors" << std::endl;
-    // this->vertex.reserve(this->numValues);
-    // this->color.reserve(this->numValues);
-    // for (auto v : mesh.vertices())
-    // {
-    //     auto point = mesh.point(v);
-    //     this->vertex.push_back(rkcommon::math::vec3f(point.x(), point.y(), point.z()));
-    //     this->color.push_back(rkcommon::math::vec4f(229.f, 217.f, 194.f, 1.f));
-    // }
-
-    // std::cout << "[DataFile] Creating Indices" << std::endl;
-    // this->index.reserve(mesh.number_of_faces());
-
-    // //Get face indices ...
-    // for (Mesh::Face_index face_index : mesh.faces()) {
-    //     CGAL::Vertex_around_face_circulator<Mesh> vcirc(mesh.halfedge(face_index), mesh), done(vcirc);
-    //     rkcommon::math::vec3ui face;
-    //     face.x = *vcirc++;
-    //     face.y = *vcirc++;
-    //     face.z = *vcirc++;
-    //     this->index.push_back(face);
-    // }
-    // std::cout << "[DataFile] Done" << std::endl;
 }   
+
+void DataFile::loadTimeStep(size_t timestep) {
+    // //std::cout<<"[DataFile] Loading timestep "<<timestep<<std::endl;
+    if (this->varLoaded == false) {
+        std::cerr << "No netCDF variable loaded!" << std::endl;
+        throw std::exception();
+    }
+
+    // load data
+
+    if (0 <= timestep && timestep < this->timeDim) {
+        if (this->data != NULL) {
+            free(this->data);
+        }
+        this->data = (float*) malloc(this->numValues * sizeof(float));
+        this->ncVariable.getVar(
+            std::vector<size_t> {timestep, 0, 0}, 
+            std::vector<size_t> {1, this->latDim, this->lonDim}, 
+            this->data);
+    }
+    else {
+        std::cerr << "Invalid timestep!" << std::endl;
+    }
+}
+
+void DataFile::loadVariable(std::string varname)
+{
+    if (this->ncLoaded == false) {
+        std::cerr << "No netCDF data loaded!" << std::endl;
+        throw std::exception();
+    }
+
+    // search map for variable
+    auto it = this->varmap.find(varname);
+    this->ncVariable = it->second;
+
+    if (this->ncVariable.isNull()) {
+        std::cerr << "Variable ["<< varname <<"] not found!" << std::endl;
+        throw std::exception();
+    }
+
+    // overwrite any configured values   with the file's values
+    if (this->ncVariable.getDimCount() == 3) {
+        this->timeDim = this->ncVariable.getDim(0).getSize();
+        this->latDim = this->ncVariable.getDim(1).getSize();
+        this->lonDim = this->ncVariable.getDim(2).getSize();
+    }
+    else if (this->ncVariable.getDimCount() == 2) {
+        this->timeDim = 1;
+        this->latDim = this->ncVariable.getDim(0).getSize();
+        this->lonDim = this->ncVariable.getDim(1).getSize();
+    }
+    else {
+        std::cerr << "Variable has wrong dimension!" << std::endl;
+        throw std::exception();
+    }
+        this->numValues = this->latDim * this->lonDim;
+
+    this->varLoaded = true;
+}
+
+void DataFile::readNetCDF()
+{
+    this->ncFile = new netCDF::NcFile(filename.c_str(), netCDF::NcFile::read);
+    
+    // only get the first variable
+    this->varmap = ncFile->getVars();
+    // variable = varmap.begin()->second;
+    // std::multimap <std::string, netCDF::NcVar>::const_iterator it;
+    for (auto it = varmap.begin(); it != varmap.end(); ++it)
+    {
+       //std::cout << "Variable name: " << it->first << std::endl;
+    }
+    ////std::cout << variable.getDimCount() << std::endl;
+    this->ncLoaded = true;
+
+}
 
 void DataFile::readTIFF()
 {
-
     /* read in the raster data */
     GDALAllRegister();
 
@@ -158,7 +148,7 @@ void DataFile::readTIFF()
     /* open the file */
     dataset = (GDALDataset *) GDALOpen(filename.c_str(), GA_ReadOnly);
     if( dataset == NULL ) {
-        std::cout << "Failed to open" << std::endl;
+       //std::cout << "Failed to open" << std::endl;
         exit(1);
     }
 
@@ -172,7 +162,7 @@ void DataFile::readTIFF()
         this->pixelSizeX = this->geoTransform[1];
         this->pixelSizeY = this->geoTransform[5];
     } else {
-        std::cout << "Failed read geotransform" << std::endl;
+       //std::cout << "Failed read geotransform" << std::endl;
         exit(1);
     }
 
@@ -189,7 +179,7 @@ void DataFile::readTIFF()
 
     err = elevationBand->RasterIO(GF_Read, 0, 0, this->width, this->height, &this->data[0], this->width, this->height, GDT_Float32, 0, 0);
     if (err != CE_None) {
-        std::cout << "Failed to read raster band" << std::endl;
+       //std::cout << "Failed to read raster band" << std::endl;
         exit(1);
     }
 
@@ -202,9 +192,6 @@ void DataFile::readTIFF()
     this->vertex.reserve(this->numValues);
     this->color.reserve(this->numValues);
     this->index.reserve(numIndices);
-    // unsigned long int tmp = this->height;
-    // this->height = this->width;
-    // this->width = tmp;
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {
 
@@ -215,7 +202,6 @@ void DataFile::readTIFF()
             /* get the elevation value */
             double z = this->data[(y * this->width) + x];
             this->vertex.push_back(rkcommon::math::vec3f((float)currX,z/10000,(float)currY));
-            // this->vertex.push_back(rkcommon::math::vec3d(x, 0, y));
             this->color.push_back(rkcommon::math::vec4f(0.9f, 0.5f, 0.5f, 1.0f));
 
             /* create indices for vertex array */
@@ -230,21 +216,11 @@ void DataFile::readTIFF()
         }
     }
 }
-    // off1 = !off1;
-// this->index.push_back(rkcommon::math::vec3ui(tl,tr,bl)); // top right triangle
-// this->index.push_back(rkcommon::math::vec3ui(bl,tr,br)); // bottom left triangle
-// this->index.push_back(rkcommon::math::vec3ui(tl,bl,br)); // bottom left triangle
-// this->index.push_back(rkcommon::math::vec4ui(tl,bl,br,tr)); // bottom left triangle
-// if (off2){
-//     this->index.push_back(rkcommon::math::vec3ui(tl,tr,bl)); // bottom left triangle
-//     this->index.push_back(rkcommon::math::vec3ui(bl,tr,br)); // top right triangle
-// } else {
-//     this->index.push_back(rkcommon::math::vec3ui(tl,tr,br)); // top right triangle
-//     this->index.push_back(rkcommon::math::vec3ui(tl,br,bl)); // bottom left triangle
-// }
+   
 
-// std::cout<<"(x,y,i) = ("<<x<<","<<y<<","<<(y * this->width) + x<<")"<<" ; " << rkcommon::math::vec3ui(tl,bl,br) << " ; " << rkcommon::math::vec3ui(tl,tr,br)<<std::endl;
-// off2 = !off2;
+
+
+
 FILETYPE DataFile::getFiletype()
 {
     std::stringstream ss;
@@ -259,11 +235,6 @@ FILETYPE DataFile::getFiletype()
         token.compare("tif") == 0) {
         return TIFF;
     }
-    // if(token.compare("bin") == 0 ||
-    //    token.compare("dat") == 0 ||
-    //    token.compare("raw") == 0) {
-    //     return BINARY;
-    // }
     else if(token.compare("nc") == 0) {
         return NETCDF;
     }
@@ -302,14 +273,14 @@ void DataFile::printStatistics()
         return;
     }
 
-    std::cout << this->filename << std::endl;
-    // std::cout << "dimensions: " << this->xDim << ", "
+   //std::cout << this->filename << std::endl;
+    ////std::cout << "dimensions: " << this->xDim << ", "
     //                             << this->yDim << ", "
     //                             << this->zDim << std::endl;
-    std::cout << "minimum:    " << this->minVal << std::endl;
-    std::cout << "maximum:    " << this->maxVal << std::endl;
-    std::cout << "mean:       " << this->avgVal << std::endl;
-    std::cout << "std. dev.:  " << this->stdDev << std::endl;
+   //std::cout << "minimum:    " << this->minVal << std::endl;
+   //std::cout << "maximum:    " << this->maxVal << std::endl;
+   //std::cout << "mean:       " << this->avgVal << std::endl;
+   //std::cout << "std. dev.:  " << this->stdDev << std::endl;
 }
 
 }

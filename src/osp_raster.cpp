@@ -13,9 +13,9 @@ namespace rasty
 
 void rastyInit(int argc, const char **argv)
 {
-    std::cout<<"Initializing OSPRay"<<std::endl;
+    //std::cout<<"Initializing OSPRay"<<std::endl;
     ospInit(&argc, argv);
-    std::cout<<"Done Initializing OSPRay"<<std::endl;
+    //std::cout<<"Done Initializing OSPRay"<<std::endl;
 }
 
 

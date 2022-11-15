@@ -27,6 +27,8 @@ namespace rasty {
             void setBackgroundColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
             void setBackgroundColor(std::vector<unsigned char> bgColor);
             void setRaster(Raster *r);
+            void setData(DataFile *dataFile);
+            void setCbar(Cbar *cbar);
             void addLight();
             // void setIsosurface(Raster *v, std::vector<float> &isoValues);
             // void setIsosurface(Raster *v, std::vector<float> &isoValues, float specular);
@@ -56,6 +58,7 @@ namespace rasty {
 
             Camera * rastyCamera;
             Raster * rastyRaster;
+            Cbar * cbar;
  
             int cameraWidth;
             int cameraHeight;
@@ -76,6 +79,8 @@ namespace rasty {
             std::vector<OSPLight> lights;
             float lightDirection[3];
             unsigned int samples;
+
+            bool rasterChanged;
     };
 }
 

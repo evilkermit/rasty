@@ -1,6 +1,8 @@
 #include "Camera.h"
 #include "Renderer.h"
 #include "Raster.h"
+#include "DataFile.h"
+#include "Cbar.h"
 
 #include <algorithm>
 #include <iostream>
@@ -24,7 +26,7 @@ namespace rasty {
 Renderer::Renderer() :
     backgroundColor(), samples(1)
 {
-    std::cout<<"[Renderer] Init"<<std::endl;
+    //std::cout<<"[Renderer] Init"<<std::endl;
 
     this->oRenderer = ospNewRenderer("scivis");
 
@@ -36,6 +38,7 @@ Renderer::Renderer() :
     this->oWorld = NULL;
     // this->oSurface = NULL;
     this->oMaterial = NULL;
+    this->rasterChanged = true;
     this->lastRasterID = "unset";
     this->lastCameraID = "unset";
 }
@@ -43,7 +46,7 @@ Renderer::Renderer() :
 Renderer::~Renderer()
 {
 
-    std::cout<<"[Renderer] Deleting Renderer"<<std::endl;
+    //std::cout<<"[Renderer] Deleting Renderer"<<std::endl;
     // ospRemoveParam(this->oRenderer, "bgColor");
     // ospRemoveParam(this->oRenderer, "spp");
     // ospRemoveParam(this->oRenderer, "lights");
@@ -77,13 +80,13 @@ Renderer::~Renderer()
     ospRelease(this->oInstance);
     ospRelease(this->oGroup);
     ospRelease(this->oWorld);
-    std::cout<<"[Renderer] Deleted Renderer"<<std::endl;
+    //std::cout<<"[Renderer] Deleted Renderer"<<std::endl;
 
 }
 
 void Renderer::setBackgroundColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-    std::cout<<"[Renderer] setBackgroundColor"<<std::endl;
+    //std::cout<<"[Renderer] setBackgroundColor"<<std::endl;
 
     this->backgroundColor[0] = r;
     this->backgroundColor[1] = g;
@@ -108,12 +111,12 @@ void Renderer::setBackgroundColor(std::vector<unsigned char> bgColor)
 
 void Renderer::setRaster(Raster *r)
 {
-    std::cout<<"[Renderer] setRaster"<<std::endl;
+    //std::cout<<"[Renderer] setRaster"<<std::endl;
 
-    if(this->lastRasterID == r->ID && this->lastRenderType == "geometry") {
+    if(this->lastRasterID == r->ID && this->lastRenderType == "geometry" && !this->rasterChanged) {
         // this is the same volume as the current model and we previously
         // did a volume render
-        std::cout<<"[Renderer] Same Raster as last time, skipping"<<std::endl;
+        //std::cout<<"[Renderer] Same Raster as last time, skipping"<<std::endl;
         return;
     }
     if(this->oModel != NULL) {
@@ -128,8 +131,6 @@ void Renderer::setRaster(Raster *r)
     this->lastRenderType = "geometry";
 
     this->oMaterial = ospNewMaterial("", "obj");
-    // ospSetVec3f(this->oModel, "tf", 255,0,0);
-
     ospCommit(this->oMaterial);
 
     this->oModel = ospNewGeometricModel(r->asOSPRayObject());
@@ -137,11 +138,30 @@ void Renderer::setRaster(Raster *r)
     ospRelease(this->oMaterial);
 
     ospCommit(this->oModel);
+    this->rasterChanged = false;
+}
+
+void Renderer::setCbar(Cbar *cbar) {
+    this->cbar = cbar;
+}
+
+
+void Renderer::setData(DataFile * dataFile)
+{
+    //std::cout<<"[Renderer] setData"<<std::endl;
+    std::vector<rkcommon::math::vec4f> colors;
+    colors.reserve(dataFile->numValues);
+    for (int i = 0; i < dataFile->numValues; i++) {
+        colors.push_back(this->cbar->getColor(dataFile->data[i]));
+    }
+    this->rastyRaster->setColor(colors);
+    this->setRaster(this->rastyRaster);    
+    this->rasterChanged = true;
 }
 
 void Renderer::addLight()
 {
-    std::cout<<"[Renderer] addLight"<<std::endl;
+    //std::cout<<"[Renderer] addLight"<<std::endl;
 
     // currently the renderer will hold only one light
     if(this->lights.size() == 0) {
@@ -215,7 +235,7 @@ void Renderer::addLight()
 
 void Renderer::setCamera(Camera *c)
 {
-    std::cout<<"[Renderer] setCamera"<<std::endl;
+    //std::cout<<"[Renderer] setCamera"<<std::endl;
 
     if(this->lastCameraID == c->ID) {
         // this is the same camera as the current one
@@ -275,7 +295,7 @@ void Renderer::renderToPNGObject(std::vector<unsigned char> &png)
 {
     unsigned char *colorBuffer;
     this->renderToBuffer(&colorBuffer);
-    std::cout<<"[Renderer] renderToPNGObject"<<std::endl;
+    //std::cout<<"[Renderer] renderToPNGObject"<<std::endl;
     unsigned int error = lodepng::encode(png, colorBuffer,
             this->cameraWidth, this->cameraHeight);
     if(error) {
@@ -291,9 +311,9 @@ void Renderer::renderToPNGObject(std::vector<unsigned char> &png)
  */
 void Renderer::renderToBuffer(unsigned char **buffer)
 {   
-    std::cout<<"[Renderer] renderToBuffer"<<std::endl;
+    //std::cout<<"[Renderer] renderToBuffer"<<std::endl;
     this->render();
-    std::cout<<"[Renderer] renderToBuffer"<<std::endl;
+    //std::cout<<"[Renderer] renderToBuffer"<<std::endl;
 
     int width = this->cameraWidth;
     int height = this->cameraHeight;
@@ -320,11 +340,11 @@ void Renderer::renderToBuffer(unsigned char **buffer)
             (*buffer)[4*index + 1] = (unsigned char) (g + gbg * (1 - a));
             (*buffer)[4*index + 2] = (unsigned char) (b + bbg * (1 - a));
             (*buffer)[4*index + 3] = (unsigned char) 255 * (a + abg * (1 - a));
-            // std::cout<< (int)(*buffer)[4*index + 0] << " " << (int)(*buffer)[4*index + 1] << " " << (int)(*buffer)[4*index + 2] << " " << (int)(*buffer)[4*index + 3] << std::endl;
+            // //std::cout<< (int)(*buffer)[4*index + 0] << " " << (int)(*buffer)[4*index + 1] << " " << (int)(*buffer)[4*index + 2] << " " << (int)(*buffer)[4*index + 3] << std::endl;
         }
     }
 
-    std::cout<<"[Renderer] unmap fram buffer"<<std::endl;
+    //std::cout<<"[Renderer] unmap fram buffer"<<std::endl;
     ospUnmapFrameBuffer(colorBuffer, this->oFrameBuffer);
     ospRelease(this->oFrameBuffer);
 }
@@ -332,7 +352,7 @@ void Renderer::renderToBuffer(unsigned char **buffer)
 void Renderer::render()
 {
 
-    std::cout << "[Renderer] render" << std::endl;
+   //std::cout << "[Renderer] render" << std::endl;
 
     //check if everything is ready for rendering
     bool exit = false;
@@ -347,44 +367,51 @@ void Renderer::render()
     if(exit)
         return;
 
-    if (this->oGroup != NULL) {
-        ospRelease(this->oGroup);
-        this->oGroup = NULL;
-    }
+    // if (this->oGroup != NULL) {
+    //     //std::cout<<"[Renderer] release group"<<std::endl;
+    //     ospRelease(this->oGroup);
+    //     this->oGroup = NULL;
+    // }
 
-    if (this->oInstance != NULL) {
-        ospRelease(this->oInstance);
-        this->oInstance = NULL;
-    }
+    // if (this->oInstance != NULL) {
+    //     //std::cout<<"[Renderer] release instance"<<std::endl;
+    //     ospRelease(this->oInstance);
+    //     this->oInstance = NULL;
+    // }
 
-    if (this->oWorld != NULL) {
-        ospRelease(this->oWorld);
-        this->oWorld = NULL;
-    }
-    std::cout << "[Renderer] create group" << std::endl;
-
+    // if (this->oWorld != NULL) {
+    //     //std::cout<<"[Renderer] release world"<<std::endl;
+    //     ospRelease(this->oWorld);
+    //     this->oWorld = NULL;
+    // }
+    
+    if (this->oGroup == NULL){
+   //std::cout << "[Renderer] create group" << std::endl;
     this->oGroup = ospNewGroup();
     ospSetObjectAsData(this->oGroup, "geometry", OSP_GEOMETRIC_MODEL, this->oModel);
     ospCommit(this->oGroup);
 
-    std::cout << "[Renderer] create instance" << std::endl;
+   //std::cout << "[Renderer] create instance" << std::endl;
     this->oInstance = ospNewInstance(this->oGroup);
         // spacing * vec3f(i.x, h, i.y)
-    std::cout << this->rastyRaster->getCenterTransformation() << std::endl;
+   //std::cout << this->rastyRaster->getCenterTransformation() << std::endl;
     ospSetParam(this->oInstance, "transform", OSP_AFFINE3F, this->rastyRaster->getCenterTransformation());
     ospCommit(this->oInstance);
+    // ospRelease(this->oGroup);
+    // this->oGroup = NULL;
 
-    ospRelease(this->oGroup);
-    std::cout << "[Renderer] create world" << std::endl;
+   //std::cout << "[Renderer] create world" << std::endl;
 
     this->oWorld = ospNewWorld();
     ospSetObjectAsData(this->oWorld, "instance", OSP_INSTANCE, this->oInstance);
-    // ospCommit(this->oWorld);
-    ospRelease(this->oInstance);
+    ospCommit(this->oWorld);
+    // ospRelease(this->oInstance);
+    // this->oInstance = NULL;
+    }
     //finalize the OSPRay renderer
     
     if(this->lights.size() == 1) {
-        std::cout << "[Renderer] lightssss" << std::endl;
+       //std::cout << "[Renderer] lightssss" << std::endl;
         //if there was a light, set its direction based on the camera
         //and add it to the renderer
         ospSetParam(this->lights[0], "direction", OSP_VEC3F, this->lightDirection);
@@ -406,18 +433,18 @@ void Renderer::render()
     this->cameraWidth = this->rastyCamera->getImageWidth();
     this->cameraHeight = this->rastyCamera->getImageHeight();
 
-    std::cout << "[Renderer] create framebuffer" << std::endl;
+   //std::cout << "[Renderer] create framebuffer" << std::endl;
 
     //this framebuffer will be released after a single frame
     this->oFrameBuffer = ospNewFrameBuffer(this->cameraWidth, this->cameraHeight, OSP_FB_SRGBA,
                                            OSP_FB_COLOR | OSP_FB_ACCUM);
     ospResetAccumulation(this->oFrameBuffer);
 
-    std::cout << "[Renderer] render frame" << std::endl;
+   //std::cout << "[Renderer] render frame" << std::endl;
     for (int frames = 0; frames < 30; frames++){
         ospRenderFrameBlocking(this->oFrameBuffer, this->oRenderer, this->oCamera, this->oWorld);
     }
-    std::cout << "[Renderer] done rendering" << std::endl;
+   //std::cout << "[Renderer] done rendering" << std::endl;
 }
 
 IMAGETYPE Renderer::getFiletype(std::string filename)
