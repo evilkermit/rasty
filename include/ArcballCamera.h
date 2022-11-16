@@ -1,9 +1,9 @@
 // Copyright 2017 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
-#ifndef OSP_RASTER_ARCBALL_H
-#define OSP_RASTER_ARCBALL_H
+#ifndef RASTY_ARCBALL_H
+#define RASTY_ARCBALL_H
 
-#include <osp_raster.h>
+#include <rasty.h>
 #include "rkcommon/math/AffineSpace.h"
 
 namespace rasty {

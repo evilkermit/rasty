@@ -1,11 +1,11 @@
-#ifndef OSP_RASTER_DATAFILE_H
-#define OSP_RASTER_DATAFILE_H
+#ifndef RASTY_DATAFILE_H
+#define RASTY_DATAFILE_H
 
 #include <string>
 #include <vector>
 #include <netcdf>
 #include <map>
-#include <osp_raster.h>
+#include <rasty.h>
 #include "ospray/ospray_cpp/ext/rkcommon.h"
 
 

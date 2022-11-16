@@ -1,12 +1,12 @@
-#ifndef OSP_RASTER_RENDERER_H
-#define OSP_RASTER_RENDERER_H
+#ifndef RASTY_RENDERER_H
+#define RASTY_RENDERER_H
 
 // disable using an X display
 #define cimg_display 0
 // force libjpeg usage
 #define cimg_use_jpeg 1 
 
-#include <osp_raster.h>
+#include <rasty.h>
 
 #include <string>
 #include <vector>

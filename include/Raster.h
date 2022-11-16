@@ -1,8 +1,8 @@
-#ifndef OSP_RASTER_RASTER_H
-#define OSP_RASTER_RASTER_H
+#ifndef RASTY_RASTER_H
+#define RASTY_RASTER_H
 
 
-#include <osp_raster.h>
+#include <rasty.h>
 #include <DataFile.h>
 
 #include <string>

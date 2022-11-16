@@ -1,5 +1,5 @@
-#ifndef OSP_RASTER_H
-#define OSP_RASTER_H
+#ifndef RASTY_H
+#define RASTY_H
 
 #include <ospray/ospray.h>
 

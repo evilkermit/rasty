@@ -1,7 +1,7 @@
-#ifndef OSP_RASTER_CAMERA_H
-#define OSP_RASTER_CAMERA_H
+#ifndef RASTY_CAMERA_H
+#define RASTY_CAMERA_H
 
-#include <osp_raster.h>
+#include <rasty.h>
 #include <Raster.h>
 
 #include <ospray/ospray.h>

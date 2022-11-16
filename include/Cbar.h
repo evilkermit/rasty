@@ -1,6 +1,6 @@
-#ifndef OSP_RASTER_CBAR_H
-#define OSP_RASTER_CBAR_H
-#include <osp_raster.h>
+#ifndef RASTY_CBAR_H
+#define RASTY_CBAR_H
+#include <rasty.h>
 #include <string>
 #include "ospray/ospray_cpp/ext/rkcommon.h"
 

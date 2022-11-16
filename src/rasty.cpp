@@ -1,4 +1,4 @@
-#include "osp_raster.h"
+#include "rasty.h"
 
 #include <ospray/ospray.h>
 

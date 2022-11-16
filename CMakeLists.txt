@@ -1,7 +1,7 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 
-PROJECT(osp_raster)
+PROJECT(rasty)
 
 SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/")
@@ -31,11 +31,11 @@ OPTION(BUILD_EXAMPLES "Build example applications" ON)
 # OPTION(BUILD_DOCUMENTATION "Build documentation with Sphinx" OFF)
 
 # ${CGAL_LIBRARIES}
-SET(OSP_RASTER_LIBS ${EMBREE_LIBRARIES} ${OSPRAY_LIBRARIES} )
-SET(OSP_RASTER_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include"
+SET(RASTY_LIBS ${EMBREE_LIBRARIES} ${OSPRAY_LIBRARIES} )
+SET(RASTY_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include"
     ${OSPRAY_INCLUDE_DIR} ${EMBREE_INCLUDE_DIRS} ${RKCOMMON_INCLUDE_DIR})
 
-# MESSAGE(STATUS "OSP_RASTER LIBS: ${OSP_RASTER_LIBS}")
+# MESSAGE(STATUS "RASTY LIBS: ${RASTY_LIBS}")
 # MESSAGE(STATUS "OSPRAY LIBS: ${OSPRAY_LIBRARIES}")
 # MESSAGE(STATUS "EMBREE LIBS: ${EMBREE_LIBRARIES}")
 
@@ -52,42 +52,42 @@ SET(NETCDF_USE_DEFAULT_PATHS ON)
 
 FIND_PACKAGE(NetCDF COMPONENTS CXX)
 
-get_cmake_property(_variableNames VARIABLES)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
+# get_cmake_property(_variableNames VARIABLES)
+# foreach (_variableName ${_variableNames})
+#     message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()
 
 IF(NETCDF_FOUND)
-    ADD_DEFINITIONS(-DOSP_RASTER_NETCDF)
-    SET(OSP_RASTER_INCLUDE_DIRS ${OSP_RASTER_INCLUDE_DIRS}
+    ADD_DEFINITIONS(-DRASTY_NETCDF)
+    SET(RASTY_INCLUDE_DIRS ${RASTY_INCLUDE_DIRS}
         ${NETCDF_CXX_INCLUDE_DIRS})
-    SET(OSP_RASTER_LIBS ${OSP_RASTER_LIBS} ${NETCDF_CXX_LIBRARIES})
+    SET(RASTY_LIBS ${RASTY_LIBS} ${NETCDF_CXX_LIBRARIES})
 ELSE()
     MESSAGE(FATAL_ERROR
         "Requested NetCDF but the library could not be found")
 ENDIF()
 # ENDIF(USE_NETCDF)
 
-FILE(GLOB OSP_RASTER_SOURCES "src/*.cpp" "src/lodepng/*.cpp")
+FILE(GLOB RASTY_SOURCES "src/*.cpp" "src/lodepng/*.cpp")
 
-ADD_LIBRARY(osp_raster SHARED ${OSP_RASTER_SOURCES})
-TARGET_INCLUDE_DIRECTORIES(osp_raster PUBLIC ${OSP_RASTER_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(osp_raster ${OSP_RASTER_LIBS} pthread jpeg gdal)
+ADD_LIBRARY(rasty SHARED ${RASTY_SOURCES})
+TARGET_INCLUDE_DIRECTORIES(rasty PUBLIC ${RASTY_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(rasty ${RASTY_LIBS} pthread jpeg gdal)
 
 IF(BUILD_EXAMPLES)
-    ADD_EXECUTABLE(simple_render ${OSP_RASTER_SOURCES}
+    ADD_EXECUTABLE(simple_render ${RASTY_SOURCES}
         "examples/simple_render.cpp")
-    TARGET_LINK_LIBRARIES(simple_render ${OSP_RASTER_LIBS} pthread jpeg gdal)
-    TARGET_INCLUDE_DIRECTORIES(simple_render PUBLIC ${OSP_RASTER_INCLUDE_DIRS})
-    # ADD_EXECUTABLE(timeSeries ${OSP_RASTER_SOURCES} "src/test/timeSeries.cpp")
-    # TARGET_LINK_LIBRARIES(timeSeries ${OSP_RASTER_LIBS} pthread jpeg)
-    # TARGET_INCLUDE_DIRECTORIES(timeSeries PUBLIC ${OSP_RASTER_INCLUDE_DIRS})
-    # ADD_EXECUTABLE(benchmark ${OSP_RASTER_SOURCES} "src/test/benchmark.cpp")
-    # TARGET_LINK_LIBRARIES(benchmark ${OSP_RASTER_LIBS} pthread jpeg)
-    # TARGET_INCLUDE_DIRECTORIES(benchmark PUBLIC ${OSP_RASTER_INCLUDE_DIRS})
-    # ADD_EXECUTABLE(omni ${OSP_RASTER_SOURCES} "src/test/omni.cpp")
-    # TARGET_LINK_LIBRARIES(omni ${OSP_RASTER_LIBS} pthread jpeg)
-    # TARGET_INCLUDE_DIRECTORIES(omni PUBLIC ${OSP_RASTER_INCLUDE_DIRS})
+    TARGET_LINK_LIBRARIES(simple_render ${RASTY_LIBS} pthread jpeg gdal)
+    TARGET_INCLUDE_DIRECTORIES(simple_render PUBLIC ${RASTY_INCLUDE_DIRS})
+    # ADD_EXECUTABLE(timeSeries ${RASTY_SOURCES} "src/test/timeSeries.cpp")
+    # TARGET_LINK_LIBRARIES(timeSeries ${RASTY_LIBS} pthread jpeg)
+    # TARGET_INCLUDE_DIRECTORIES(timeSeries PUBLIC ${RASTY_INCLUDE_DIRS})
+    # ADD_EXECUTABLE(benchmark ${RASTY_SOURCES} "src/test/benchmark.cpp")
+    # TARGET_LINK_LIBRARIES(benchmark ${RASTY_LIBS} pthread jpeg)
+    # TARGET_INCLUDE_DIRECTORIES(benchmark PUBLIC ${RASTY_INCLUDE_DIRS})
+    # ADD_EXECUTABLE(omni ${RASTY_SOURCES} "src/test/omni.cpp")
+    # TARGET_LINK_LIBRARIES(omni ${RASTY_LIBS} pthread jpeg)
+    # TARGET_INCLUDE_DIRECTORIES(omni PUBLIC ${RASTY_INCLUDE_DIRS})
 ENDIF(BUILD_EXAMPLES)
 
 # IF(BUILD_DOCUMENTATION)
@@ -95,7 +95,7 @@ ENDIF(BUILD_EXAMPLES)
 # ENDIF(BUILD_DOCUMENTATION)
 
 # install rules
-INSTALL(TARGETS osp_raster LIBRARY DESTINATION lib)
+INSTALL(TARGETS rasty LIBRARY DESTINATION lib)
 INSTALL(DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/include/" DESTINATION include
     FILES_MATCHING PATTERN "*.h")
 #####################################################################################################################

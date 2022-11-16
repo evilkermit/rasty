@@ -1,7 +1,7 @@
-#ifndef OSP_RASTER_TRANSFERFUNCTION_H
-#define OSP_RASTER_TRANSFERFUNCTION_H
+#ifndef RASTY_TRANSFERFUNCTION_H
+#define RASTY_TRANSFERFUNCTION_H
 
-#include <osp_raster.h>
+#include <rasty.h>
 
 #include <ospray/ospray.h>
 #include "ospray/ospray_cpp/ext/rkcommon.h"

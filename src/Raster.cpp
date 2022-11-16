@@ -1,7 +1,7 @@
 #include "Raster.h"
 #include "DataFile.h"
 #include "TransferFunction.h"
-// #include "osp_raster.h"
+// #include "rasty.h"
 #include <iostream>
 #include <vector>
 #include <ospray/ospray.h>
