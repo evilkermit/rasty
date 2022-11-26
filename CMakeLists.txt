@@ -79,6 +79,11 @@ IF(BUILD_EXAMPLES)
         "examples/simple_render.cpp")
     TARGET_LINK_LIBRARIES(simple_render ${RASTY_LIBS} pthread jpeg gdal)
     TARGET_INCLUDE_DIRECTORIES(simple_render PUBLIC ${RASTY_INCLUDE_DIRS})
+
+    ADD_EXECUTABLE(rastyTest ${RASTY_SOURCES}
+    "examples/rastyTest.cpp")
+    TARGET_LINK_LIBRARIES(rastyTest ${RASTY_LIBS} pthread jpeg gdal)
+    TARGET_INCLUDE_DIRECTORIES(rastyTest PUBLIC ${RASTY_INCLUDE_DIRS})
     # ADD_EXECUTABLE(timeSeries ${RASTY_SOURCES} "src/test/timeSeries.cpp")
     # TARGET_LINK_LIBRARIES(timeSeries ${RASTY_LIBS} pthread jpeg)
     # TARGET_INCLUDE_DIRECTORIES(timeSeries PUBLIC ${RASTY_INCLUDE_DIRS})

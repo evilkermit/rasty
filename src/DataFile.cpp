@@ -59,7 +59,7 @@ void DataFile::loadFromFile(std::string filename)
 }   
 
 void DataFile::loadTimeStep(size_t timestep) {
-    // //std::cout<<"[DataFile] Loading timestep "<<timestep<<std::endl;
+    std::cout<<"[DataFile] Loading timestep "<<timestep<<std::endl;
     if (this->varLoaded == false) {
         std::cerr << "No netCDF variable loaded!" << std::endl;
         throw std::exception();
@@ -84,6 +84,7 @@ void DataFile::loadTimeStep(size_t timestep) {
 
 void DataFile::loadVariable(std::string varname)
 {
+    std::cout<< "[DataFile] Loading variable " << varname << std::endl;
     if (this->ncLoaded == false) {
         std::cerr << "No netCDF data loaded!" << std::endl;
         throw std::exception();
@@ -116,6 +117,7 @@ void DataFile::loadVariable(std::string varname)
         this->numValues = this->latDim * this->lonDim;
 
     this->varLoaded = true;
+    std::cout<< "[DataFile] Loaded variable " << varname << std::endl;
 }
 
 void DataFile::readNetCDF()
@@ -128,7 +130,7 @@ void DataFile::readNetCDF()
     // std::multimap <std::string, netCDF::NcVar>::const_iterator it;
     for (auto it = varmap.begin(); it != varmap.end(); ++it)
     {
-       //std::cout << "Variable name: " << it->first << std::endl;
+       std::cout << "Variable name: " << it->first << std::endl;
     }
     ////std::cout << variable.getDimCount() << std::endl;
     this->ncLoaded = true;
