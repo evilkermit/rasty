@@ -50,6 +50,9 @@ namespace rasty {
             float cameraUpY;
             float cameraUpZ;
 
+            float elevationScale;
+            float heightWidthScale;
+            
             std::vector<float> isosurfaceValues;
             float specularity;
 

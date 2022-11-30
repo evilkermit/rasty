@@ -42,6 +42,8 @@ int main(int argc, const char **argv)
 
     std::cout<<"raster"<<std::endl;
     rasty::Raster *raster = new rasty::Raster(config->geoFilename);
+    raster->setElevationScale(config->elevationScale);
+    raster->setHeightWidthScale(config->heightWidthScale);
 
     std::cout<<"renderer"<<std::endl;
     rasty::Renderer *renderer = new rasty::Renderer();
@@ -54,7 +56,7 @@ int main(int argc, const char **argv)
     camera->setPosition(config->cameraX,config->cameraY,config->cameraZ);
     camera->setUpVector(config->cameraUpX,config->cameraUpY,config->cameraUpZ);
     camera->centerView();
-    
+
     renderer->setCamera(camera);
     renderer->addLight();
 

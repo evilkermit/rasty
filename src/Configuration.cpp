@@ -214,6 +214,16 @@ Configuration::Configuration(rapidjson::Document& json)
         this->cameraUpZ = 0.0;
     }
 
+    if(json.HasMember("elevationScale"))
+        this->elevationScale = json["elevationScale"].GetFloat();
+    else
+        this->elevationScale = 1.f / 10000.f;
+
+    if(json.HasMember("heightWidthScale"))
+        this->heightWidthScale = json["heightWidthScale"].GetFloat();
+    else
+        this->heightWidthScale = 1.f;
+
     // isosurface values for rendering surfaces instead of volume rendering
     // if this is not present, the vector is empty and a volume is rendered
     // if(json.HasMember("isosurfaceValues")) {

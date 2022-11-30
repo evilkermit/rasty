@@ -20,18 +20,11 @@ namespace rasty
 
 Raster::Raster(std::string filename)
 {   
-   //std::cout << "[Raster] Init" << std::endl;
     this->ID = createID();
-   //std::cout << "[Raster] ID: " << this->ID << std::endl;
 
     /* load data from file */
-   //std::cout << "[Raster] Creating DataFile Object" << std::endl;
     this->dataFile = new rasty::DataFile();
     this->loadFromFile(filename);
-
-    /* convert data to mesh */
-    // this->rasterMesh = new rasty::RasterMesh(this->dataFile);
-    // this->rasterMesh->generateMesh();
 
     this->init();
 }
@@ -66,6 +59,8 @@ Raster::~Raster()
 
 void Raster::init()
 {
+    this->elev_scale = 1.f / 10000.f;
+    this->hw_scale = 1.f;
     // ospRelease(this->oMesh);
 
     /* mesh:set up the mesh */
@@ -101,6 +96,12 @@ void Raster::setColor(std::vector<rkcommon::math::vec4f> color) {
     ospRelease(data);
     ospCommit(this->oMesh);
 }
+void Raster::setElevationScale(float elevationScale) {
+    this->elev_scale = elevationScale;
+}
+void Raster::setHeightWidthScale(float heightWidthScale) {
+    this->hw_scale = heightWidthScale;
+}
 
 rkcommon::math::vec2f Raster::getHW()
 {
@@ -127,15 +128,13 @@ rkcommon::math::box3f Raster::getBounds()
 rkcommon::math::affine3f Raster::getCenterTransformation()
 {
     // setup scaling vector
-    const float elev_scale = 1.f / 100.f;
-    const float hw_scale = 255.0f;
     rkcommon::math::vec3f scale_vec = rkcommon::math::vec3f(hw_scale, elev_scale, hw_scale);
 
     // create translation to center of coordinate system
     rkcommon::math::box3f bounds = this->getBounds();
     rkcommon::math::vec3f center_vec = (bounds.lower + bounds.upper) * 0.5f;
 
-
+    // build transformation vector
     return rkcommon::math::affine3f::scale(scale_vec) * 
             rkcommon::math::affine3f::translate(-center_vec);
 

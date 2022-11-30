@@ -27,11 +27,17 @@ namespace rasty
             rkcommon::math::affine3f getCenterTransformation();
 
             void setColor(std::vector<rkcommon::math::vec4f> color);
+            void setElevationScale(float elevationScale);
+            void setHeightWidthScale(float heightWidthScale);
+
 
             OSPGeometry asOSPRayObject();
 
             std::string ID;
-            
+
+            float elev_scale;
+            float hw_scale;
+
         // private:
             DataFile *dataFile;
             TransferFunction *transferFunction;
