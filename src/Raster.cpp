@@ -96,6 +96,7 @@ void Raster::setColor(std::vector<rkcommon::math::vec4f> color) {
 }
 
 void Raster::setColor() {
+    ospRemoveParam(this->oMesh, "vertex.color");
     OSPData data = ospNewSharedData1D(this->dataFile->color.data(), OSP_VEC4F, this->dataFile->color.size());
     ospCommit(data);
     ospSetObject(this->oMesh, "vertex.color", data);
