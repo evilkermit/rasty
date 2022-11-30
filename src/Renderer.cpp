@@ -41,6 +41,7 @@ Renderer::Renderer() :
     this->rasterChanged = true;
     this->lastRasterID = "unset";
     this->lastCameraID = "unset";
+    this->worldIsSetup = false;
 }
 
 Renderer::~Renderer()
@@ -148,15 +149,12 @@ void Renderer::setCbar(Cbar *cbar) {
 
 void Renderer::setData(DataFile * dataFile)
 {
-    //std::cout<<"[Renderer] setData"<<std::endl;
-    // std::vector<rkcommon::math::vec4f> colors;
-    // colors.reserve(dataFile->numValues);
+    // std::cout<<"[Renderer] setData"<<std::endl;
     this->rastyRaster->dataFile->color.clear();
     for (int i = 0; i < dataFile->numValues; i++) {
         this->rastyRaster->dataFile->color.push_back(this->cbar->getColor(dataFile->data[i]));
     }
     this->rastyRaster->setColor();
-    this->setRaster(this->rastyRaster);    
     this->rasterChanged = true;
 }
 
@@ -178,61 +176,6 @@ void Renderer::addLight()
     }
 }
 
-// void Renderer::setIsosurface(Volume *v, std::vector<float> &isoValues)
-// {
-//     this->setIsosurface(v, isoValues, 0.1);
-// }
-
-// void Renderer::setIsosurface(Volume *v, std::vector<float> &isoValues,
-//         float specular)
-// {
-//     if(this->lastRasterID == v->ID && this->lastRenderType == "isosurface") {
-//         // this is the same volume as the current model and we previously
-//         // did an isosurface render
-
-//         // but check if the isoValues are different
-//         if(this->lastIsoValues == isoValues) {
-//             return;
-//         }
-//     }
-//     if(this->oModel != NULL) {
-//         ospRelease(this->oModel);
-//         this->oModel = NULL;
-//     }
-
-//     // set up light and material if necessary
-//     this->addLight();
-//     if(this->oMaterial == NULL) {
-//         // create a new surface material with some specular highlighting
-//         this->oMaterial = ospNewMaterial(this->oRenderer, "OBJMaterial");
-//         float Ks[] = {specular, specular, specular};
-//         float Kd[] = {1.f-specular, 1.f-specular, 1.f-specular};
-//         ospSet3fv(this->oMaterial, "Kd", Kd);
-//         ospSet3fv(this->oMaterial, "Ks", Ks);
-//         ospSet1f(this->oMaterial, "Ns", 10);
-//         ospCommit(this->oMaterial);
-//     }
-
-//     // create an isosurface object
-//     if(this->oSurface != NULL) {
-//         ospRelease(this->oSurface);
-//         this->oSurface = NULL;
-//     }
-//     this->oSurface = ospNewGeometry("isosurfaces");
-//     OSPData isoValuesDataArray = ospNewData(isoValues.size(), OSP_FLOAT,
-//             isoValues.data());
-//     ospSetData(this->oSurface, "isovalues", isoValuesDataArray);
-//     ospSetObject(this->oSurface, "volume", v->asOSPRayObject());
-//     ospSetMaterial(this->oSurface, this->oMaterial);
-//     ospCommit(this->oSurface);
-
-//     this->lastRasterID = v->ID;
-//     this->lastRenderType = "isosurface";
-//     this->lastIsoValues = isoValues;
-//     this->oModel = ospNewModel();
-//     ospAddGeometry(this->oModel, this->oSurface);
-//     ospCommit(this->oModel);
-// }
 
 void Renderer::setCamera(Camera *c)
 {
@@ -280,15 +223,19 @@ void Renderer::renderImage(std::string imageFilename)
 
 void Renderer::renderToJPGObject(std::vector<unsigned char> &jpg, int quality)
 {
+    // std::cout << "render to buffer" << std::endl;
     unsigned char *colorBuffer;
     this->renderToBuffer(&colorBuffer);
 
     // CImg doesn't interlace the channels, we have to work around that 
+    // std::cout << "create CImg" << std::endl;
     cimg_library::CImg<unsigned char> img(colorBuffer, 4, this->cameraWidth, 
             this->cameraHeight, 1, false);
     img.permute_axes("yzcx");
-
+    // std::cout << "save jpeg to memory" << std::endl;
     img.save_jpeg_to_memory(jpg, quality);
+
+    // std::cout << "free buffer" << std::endl;
     free(colorBuffer);
 }
 
@@ -312,10 +259,11 @@ void Renderer::renderToPNGObject(std::vector<unsigned char> &png)
  */
 void Renderer::renderToBuffer(unsigned char **buffer)
 {   
-    //std::cout<<"[Renderer] renderToBuffer"<<std::endl;
+    // std::cout<<"[Renderer] renderToBuffer"<<std::endl;
     this->render();
-    //std::cout<<"[Renderer] renderToBuffer"<<std::endl;
 
+
+    // std::cout << "get frame buffer" << std::endl;
     int width = this->cameraWidth;
     int height = this->cameraHeight;
     uint32_t *colorBuffer = (uint32_t *)ospMapFrameBuffer(this->oFrameBuffer,
@@ -350,15 +298,12 @@ void Renderer::renderToBuffer(unsigned char **buffer)
     ospRelease(this->oFrameBuffer);
 }
 
-void Renderer::render()
+void Renderer::setupWorld() 
 {
-
-   //std::cout << "[Renderer] render" << std::endl;
-
     //check if everything is ready for rendering
     bool exit = false;
     if(this->oModel == NULL) {
-        std::cerr << "No volume set to render!" << std::endl;
+        std::cerr << "No model set to render!" << std::endl;
         exit = true;
     }
     if(this->oCamera == NULL) {
@@ -368,51 +313,24 @@ void Renderer::render()
     if(exit)
         return;
 
-    // if (this->oGroup != NULL) {
-    //     //std::cout<<"[Renderer] release group"<<std::endl;
-    //     ospRelease(this->oGroup);
-    //     this->oGroup = NULL;
-    // }
-
-    // if (this->oInstance != NULL) {
-    //     //std::cout<<"[Renderer] release instance"<<std::endl;
-    //     ospRelease(this->oInstance);
-    //     this->oInstance = NULL;
-    // }
-
-    // if (this->oWorld != NULL) {
-    //     //std::cout<<"[Renderer] release world"<<std::endl;
-    //     ospRelease(this->oWorld);
-    //     this->oWorld = NULL;
-    // }
-    
-    if (this->oGroup == NULL){
-   //std::cout << "[Renderer] create group" << std::endl;
+    // std::cout << "[Renderer] creating group (should only see this once)" << std::endl;
     this->oGroup = ospNewGroup();
     ospSetObjectAsData(this->oGroup, "geometry", OSP_GEOMETRIC_MODEL, this->oModel);
     ospCommit(this->oGroup);
 
-   //std::cout << "[Renderer] create instance" << std::endl;
+    // std::cout << "[Renderer] creating instance (should only see this once)" << std::endl;
     this->oInstance = ospNewInstance(this->oGroup);
-        // spacing * vec3f(i.x, h, i.y)
-   //std::cout << this->rastyRaster->getCenterTransformation() << std::endl;
     ospSetParam(this->oInstance, "transform", OSP_AFFINE3F, this->rastyRaster->getCenterTransformation());
     ospCommit(this->oInstance);
-    // ospRelease(this->oGroup);
-    // this->oGroup = NULL;
 
-   //std::cout << "[Renderer] create world" << std::endl;
-
+    // std::cout << "[Renderer] creating world (should only see this once)" << std::endl;
     this->oWorld = ospNewWorld();
     ospSetObjectAsData(this->oWorld, "instance", OSP_INSTANCE, this->oInstance);
     ospCommit(this->oWorld);
-    // ospRelease(this->oInstance);
-    // this->oInstance = NULL;
-    }
-    //finalize the OSPRay renderer
-    
+
+    std::cout << "[Renderer] create lights" << std::endl;
     if(this->lights.size() == 1) {
-       //std::cout << "[Renderer] lightssss" << std::endl;
+
         //if there was a light, set its direction based on the camera
         //and add it to the renderer
         ospSetParam(this->lights[0], "direction", OSP_VEC3F, this->lightDirection);
@@ -425,27 +343,44 @@ void Renderer::render()
         ospSetBool(this->oRenderer, "shadows", 0);
         ospSetBool(this->oRenderer, "visibleLights", 0);
     }
+    std::cout << "[Renderer] commit world" << std::endl;
     ospCommit(this->oWorld);
 
-    // ospSetObject(this->oRenderer, "model", this->oModel);
-    // ospSetObject(this->oRenderer, "camera", this->oCamera);
+    std::cout << "[Renderer] set commit renderer" << std::endl;
     ospCommit(this->oRenderer);
+    this->worldIsSetup = true;
+}
+
+
+void Renderer::render()
+{
+    bool exit = false;
+    if(this->worldIsSetup == false) {
+        std::cerr << "World is not setup!" << std::endl;
+        exit = true;
+    }
+
+    if(exit)
+        return;
+    // std::cout << "[Renderer] render" << std::endl;
+
     //set up framebuffer
+    // std::cout << "[Renderer] set up framebuffer" << std::endl;
     this->cameraWidth = this->rastyCamera->getImageWidth();
     this->cameraHeight = this->rastyCamera->getImageHeight();
 
-   //std::cout << "[Renderer] create framebuffer" << std::endl;
-
     //this framebuffer will be released after a single frame
+    // std::cout << "[Renderer] create framebuffer" << std::endl;
     this->oFrameBuffer = ospNewFrameBuffer(this->cameraWidth, this->cameraHeight, OSP_FB_SRGBA,
                                            OSP_FB_COLOR | OSP_FB_ACCUM);
+    // std::cout << "[Renderer] reset accumulation framebuffer" << std::endl;
     ospResetAccumulation(this->oFrameBuffer);
 
-   //std::cout << "[Renderer] render frame" << std::endl;
-    for (int frames = 0; frames < 30; frames++){
+    // std::cout << "[Renderer] render frame" << std::endl;
+    for (int frames = 0; frames < 10; frames++){
         ospRenderFrameBlocking(this->oFrameBuffer, this->oRenderer, this->oCamera, this->oWorld);
     }
-   //std::cout << "[Renderer] done rendering" << std::endl;
+//    std::cout << "[Renderer] done rendering" << std::endl;
 }
 
 IMAGETYPE Renderer::getFiletype(std::string filename)
