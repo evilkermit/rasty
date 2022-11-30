@@ -87,18 +87,26 @@ void Raster::init()
     ospCommit(this->oMesh);
 
 }
-
 void Raster::setColor(std::vector<rkcommon::math::vec4f> color) {
+    this->dataFile->color.clear();   
+    this->dataFile->color.shrink_to_fit();   
+
     this->dataFile->color = color;
+    this->setColor();
+}
+
+void Raster::setColor() {
     OSPData data = ospNewSharedData1D(this->dataFile->color.data(), OSP_VEC4F, this->dataFile->color.size());
     ospCommit(data);
     ospSetObject(this->oMesh, "vertex.color", data);
     ospRelease(data);
     ospCommit(this->oMesh);
 }
+
 void Raster::setElevationScale(float elevationScale) {
     this->elev_scale = elevationScale;
 }
+
 void Raster::setHeightWidthScale(float heightWidthScale) {
     this->hw_scale = heightWidthScale;
 }

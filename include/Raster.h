@@ -26,6 +26,7 @@ namespace rasty
             rkcommon::math::vec2f getHW();
             rkcommon::math::affine3f getCenterTransformation();
 
+            void setColor();
             void setColor(std::vector<rkcommon::math::vec4f> color);
             void setElevationScale(float elevationScale);
             void setHeightWidthScale(float heightWidthScale);

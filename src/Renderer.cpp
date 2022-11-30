@@ -149,12 +149,13 @@ void Renderer::setCbar(Cbar *cbar) {
 void Renderer::setData(DataFile * dataFile)
 {
     //std::cout<<"[Renderer] setData"<<std::endl;
-    std::vector<rkcommon::math::vec4f> colors;
-    colors.reserve(dataFile->numValues);
+    // std::vector<rkcommon::math::vec4f> colors;
+    // colors.reserve(dataFile->numValues);
+    this->rastyRaster->dataFile->color.clear();
     for (int i = 0; i < dataFile->numValues; i++) {
-        colors.push_back(this->cbar->getColor(dataFile->data[i]));
+        this->rastyRaster->dataFile->color.push_back(this->cbar->getColor(dataFile->data[i]));
     }
-    this->rastyRaster->setColor(colors);
+    this->rastyRaster->setColor();
     this->setRaster(this->rastyRaster);    
     this->rasterChanged = true;
 }
