@@ -66,7 +66,7 @@ Raster::~Raster()
 
 void Raster::init()
 {
-    ospRelease(this->oMesh);
+    // ospRelease(this->oMesh);
 
     /* mesh:set up the mesh */
     this->oMesh = ospNewGeometry("mesh");
@@ -112,15 +112,13 @@ rkcommon::math::box3f Raster::getBounds()
     rkcommon::math::box3f bounds{
         rkcommon::math::vec3f( // min
             this->dataFile->originX, 
-            0,
+            this->dataFile->minVal,
             this->dataFile->originY
-            // 0//this->dataFile->minVal
             ), 
         rkcommon::math::vec3f( // max
             this->dataFile->originX + (this->dataFile->width * this->dataFile->pixelSizeX), 
-            0,
+            this->dataFile->maxVal,
             this->dataFile->originY + (this->dataFile->height * this->dataFile->pixelSizeY)
-            // 0//this->dataFile->maxVal
         )
     };
     return bounds;
@@ -128,15 +126,20 @@ rkcommon::math::box3f Raster::getBounds()
 
 rkcommon::math::affine3f Raster::getCenterTransformation()
 {
-    const float spacing = 100.f;
+    // setup scaling vector
+    const float elev_scale = 1.f / 100.f;
+    const float hw_scale = 255.0f;
+    rkcommon::math::vec3f scale_vec = rkcommon::math::vec3f(hw_scale, elev_scale, hw_scale);
+
+    // create translation to center of coordinate system
     rkcommon::math::box3f bounds = this->getBounds();
-   //std::cout << "bounds: " << bounds << std::endl;
-    rkcommon::math::vec3f center = (bounds.lower + bounds.upper) * 0.5f;
-    // rkcommon::math::vec3f center(0,0,0);
-    //std::cout<<"center: "<<center.x<<" "<<center.y<<" "<<center.z<<std::endl;
-   //std::cout <<"transformation"<<rkcommon::math::affine3f::translate(-center) * rkcommon::math::affine3f::scale(rkcommon::math::vec3f(spacing,1/spacing,spacing)) <<std::endl;
-    return rkcommon::math::affine3f::translate(-center);
-            rkcommon::math::affine3f::scale(rkcommon::math::vec3f(spacing,1,spacing));
+    rkcommon::math::vec3f center_vec = (bounds.lower + bounds.upper) * 0.5f;
+
+
+    return rkcommon::math::affine3f::scale(scale_vec) * 
+            rkcommon::math::affine3f::translate(-center_vec);
+
+
 }
 
 OSPGeometry Raster::asOSPRayObject()

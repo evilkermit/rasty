@@ -53,8 +53,8 @@ int main(int argc, const char **argv)
     rasty::Camera *camera = new rasty::Camera(config->imageWidth, config->imageHeight); 
     camera->setPosition(config->cameraX,config->cameraY,config->cameraZ);
     camera->setUpVector(config->cameraUpX,config->cameraUpY,config->cameraUpZ);
-    camera->setView(0,-1,-1);
-
+    camera->centerView();
+    
     renderer->setCamera(camera);
     renderer->addLight();
 

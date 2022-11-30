@@ -126,13 +126,11 @@ void DataFile::readNetCDF()
     
     // only get the first variable
     this->varmap = ncFile->getVars();
-    // variable = varmap.begin()->second;
-    // std::multimap <std::string, netCDF::NcVar>::const_iterator it;
+
     for (auto it = varmap.begin(); it != varmap.end(); ++it)
     {
        std::cout << "Variable name: " << it->first << std::endl;
     }
-    ////std::cout << variable.getDimCount() << std::endl;
     this->ncLoaded = true;
 
 }
@@ -203,7 +201,7 @@ void DataFile::readTIFF()
 
             /* get the elevation value */
             double z = this->data[(y * this->width) + x];
-            this->vertex.push_back(rkcommon::math::vec3f((float)currX,z/10000,(float)currY));
+            this->vertex.push_back(rkcommon::math::vec3f((float)currX,(float)z,(float)currY));
             this->color.push_back(rkcommon::math::vec4f(0.9f, 0.5f, 0.5f, 1.0f));
 
             /* create indices for vertex array */
