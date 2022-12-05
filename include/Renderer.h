@@ -30,6 +30,7 @@ namespace rasty {
             void setData(DataFile *dataFile);
             void setCbar(Cbar *cbar);
             void addLight();
+            void setupWorld();
             // void setIsosurface(Raster *v, std::vector<float> &isoValues);
             // void setIsosurface(Raster *v, std::vector<float> &isoValues, float specular);
             void setCamera(Camera *c);
@@ -80,6 +81,7 @@ namespace rasty {
             float lightDirection[3];
             unsigned int samples;
 
+            bool worldIsSetup;
             bool rasterChanged;
     };
 }

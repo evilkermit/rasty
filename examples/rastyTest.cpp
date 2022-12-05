@@ -25,46 +25,45 @@ using namespace rkcommon::math;
 
 int main(int argc, const char **argv)
 {
-    rasty::ConfigReader *reader = new rasty::ConfigReader();
-    rapidjson::Document json;
-    reader->parseConfigFile("/home/hp/github/research/geofabric/examples/smnp/config/LFBB.json", json);
-    rasty::Configuration *config = new rasty::Configuration(json);
+  rasty::ConfigReader *reader = new rasty::ConfigReader();
+  rapidjson::Document json;
+  reader->parseConfigFile("/home/hp/github/research/geofabric/examples/smnp/config/LFBB.json", json);
+  rasty::Configuration *config = new rasty::Configuration(json);
 
-    rasty::rastyInit(argc, argv);
+  rasty::rastyInit(argc, argv);
 
-    rasty::DataFile *ncFile = new rasty::DataFile();
-    ncFile->loadFromFile(config->dataFilename);
-    ncFile->loadVariable(config->dataVariable);
-    ncFile->loadTimeStep(1);
+  rasty::DataFile *ncFile = new rasty::DataFile();
+  ncFile->loadFromFile(config->dataFilename);
+  ncFile->loadVariable(config->dataVariable);
+  ncFile->loadTimeStep(1);
 
-    std::cout<<"cbar"<<std::endl;
-    rasty::Cbar *cbar = new rasty::Cbar(config->colorMap);
+  std::cout<<"cbar"<<std::endl;
+  rasty::Cbar *cbar = new rasty::Cbar(config->colorMap);
 
-    std::cout<<"raster"<<std::endl;
-    rasty::Raster *raster = new rasty::Raster(config->geoFilename);
-    raster->setElevationScale(config->elevationScale);
-    raster->setHeightWidthScale(config->heightWidthScale);
+  std::cout<<"raster"<<std::endl;
+  rasty::Raster *raster = new rasty::Raster(config->geoFilename);
+  raster->setElevationScale(config->elevationScale);
+  raster->setHeightWidthScale(config->heightWidthScale);
 
-    std::cout<<"renderer"<<std::endl;
-    rasty::Renderer *renderer = new rasty::Renderer();
-    renderer->setRaster(raster);
-    renderer->setCbar(cbar);
-    renderer->setData(ncFile);
+  std::cout<<"renderer"<<std::endl;
+  rasty::Renderer *renderer = new rasty::Renderer();
+  renderer->setRaster(raster);
+  renderer->setCbar(cbar);
+  renderer->setData(ncFile);
 
-    std::cout<<"camera"<<std::endl;
-    rasty::Camera *camera = new rasty::Camera(config->imageWidth, config->imageHeight); 
-    camera->setPosition(config->cameraX,config->cameraY,config->cameraZ);
-    camera->setUpVector(config->cameraUpX,config->cameraUpY,config->cameraUpZ);
-    camera->centerView();
+  std::cout<<"camera"<<std::endl;
+  rasty::Camera *camera = new rasty::Camera(config->imageWidth, config->imageHeight); 
+  camera->setPosition(config->cameraX,config->cameraY,config->cameraZ);
+  camera->setUpVector(config->cameraUpX,config->cameraUpY,config->cameraUpZ);
+  camera->centerView();
 
-    renderer->setCamera(camera);
-    renderer->addLight();
+  renderer->setCamera(camera);
+  renderer->addLight();
+  renderer->setupWorld();
 
-
-    ncFile->loadTimeStep(1);
-    renderer->setData(ncFile);
-    renderer->renderImage(config->imageFilename);
-
+  ncFile->loadTimeStep(1);
+  renderer->setData(ncFile);
+  renderer->renderImage(config->imageFilename);
 
   ospShutdown();
   return 0;
