@@ -129,10 +129,19 @@ void DataFile::readNetCDF()
 
     for (auto it = varmap.begin(); it != varmap.end(); ++it)
     {
+        if (it->first != "latitude" &&
+            it->first != "longitude" &&
+            it->first != "time") {
+            this->variables.push_back(it->first);
+        }
        std::cout << "Variable name: " << it->first << std::endl;
     }
     this->ncLoaded = true;
 
+}
+std::vector<std::string> DataFile::getVariableNames()
+{
+    return this->variables;
 }
 
 void DataFile::readTIFF()

@@ -22,6 +22,8 @@ namespace rasty
             void loadFromFile(std::string filename);
             void loadVariable(std::string varname); /* netcdf data only */
             void loadTimeStep(size_t timestep); /* netcdf data only */
+            std::vector<std::string> getVariableNames(); /* netcdf data only */
+
             void calculateStatistics();
             void printStatistics();
 
@@ -56,6 +58,8 @@ namespace rasty
         
             /* used for nc file loading */
             std::multimap<std::string, netCDF::NcVar> varmap;
+            std::vector<std::string> variables;
+            
             netCDF::NcFile *ncFile;
             netCDF::NcVar ncVariable;
             bool statsCalculated;
