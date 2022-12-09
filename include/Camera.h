@@ -40,7 +40,7 @@ namespace rasty {
 
             std::string ID;
 
-        private:
+        // private:
             float xPos;
             float yPos;
             float zPos;
