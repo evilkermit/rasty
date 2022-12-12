@@ -34,6 +34,7 @@ namespace rasty{
     class Configuration;
 
     void rastyInit(int argc, const char **argv);
+    void rastyDestroy();
 
     std::string createID();
 } 

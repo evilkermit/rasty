@@ -147,7 +147,7 @@ std::vector<std::string> DataFile::getVariableNames()
 void DataFile::readTIFF()
 {
     /* read in the raster data */
-    GDALAllRegister();
+    // GDALAllRegister();
 
     GDALDataset  *dataset;
     GDALRasterBand  *elevationBand;
@@ -194,7 +194,7 @@ void DataFile::readTIFF()
 
     /* close the dataset */
     GDALClose(dataset); 
-    GDALDestroy();
+    // GDALDestroy();
 
     /* convert data set to vertex and color arrays */
     numIndices = (this->width - 1) * (this->height - 1) * 2;

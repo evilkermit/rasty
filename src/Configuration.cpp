@@ -154,7 +154,8 @@ Configuration::Configuration(rapidjson::Document& json)
     // choice of variable for netcdf files
     if(json.HasMember("dataVariable"))
         this->dataVariable = json["dataVariable"].GetString();
-
+    else
+        this->dataVariable = "";
     // if no color map is requested, the transfer function will just
     // use a black to white default
     if(json.HasMember("colorMap"))

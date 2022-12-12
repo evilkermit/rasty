@@ -7,7 +7,8 @@
 #include <string>
 #include <stdio.h>
 #include <string.h>
-
+#include "gdal/gdal_priv.h"
+#include "gdal/cpl_conv.h"
 namespace rasty
 {
 
@@ -16,8 +17,15 @@ void rastyInit(int argc, const char **argv)
     //std::cout<<"Initializing OSPRay"<<std::endl;
     ospInit(&argc, argv);
     //std::cout<<"Done Initializing OSPRay"<<std::endl;
+    // register gdal drivers
+    GDALAllRegister();
 }
 
+void rastyDestroy()
+{
+    ospShutdown();
+    GDALDestroy();
+}
 
 std::string createID()
 {

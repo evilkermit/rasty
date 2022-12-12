@@ -5,39 +5,79 @@ PROJECT(rasty)
 
 SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/")
-
-
-SET(BASE_OSP /home/hp/github/research/ospray/build/install/)
-SET(embree_DIR ${BASE_OSP}embree/lib/cmake/embree-3.13.3)
-SET(ospray_DIR ${BASE_OSP}ospray/lib/cmake/ospray-2.10.0)
-SET(rkcommon_DIR ${BASE_OSP}rkcommon/lib/cmake/rkcommon-1.10.0)
-SET(RKCOMMON_INCLUDE_DIR ${BASE_OSP}rkcommon/include)
-SET(OSPRAY_LIBRARIES ${BASE_OSP}ospray/lib/libospray.so.2.10.0)
-FIND_PACKAGE(ospray REQUIRED HINT ${ospray_DIR})
-FIND_PACKAGE(embree REQUIRED HINT ${embree_DIR})
-# FIND_PACKAGE(CGAL)
-
-# SET(embree_DIR ""
-#     CACHE FILEPATH "Directory containing an embree-config.cmake file")
-# SET(ospray_DIR ""
-#     CACHE FILEPATH "Directory containing an osprayConfig.cmake file")
-# FIND_PACKAGE(embree 3.2 REQUIRED)
-# FIND_PACKAGE(ospray REQUIRED)
+# cmake_policy(SET CMP0074 NEW)
 
 
 
-# OPTION(USE_NETCDF "Enable NetCDF file reading" ON)
+
+SET(embree_DIR ""
+    CACHE FILEPATH "Directory containing an embree-config.cmake file")
+SET(ospray_DIR ""
+    CACHE FILEPATH "Directory containing an osprayConfig.cmake file")
+message(STATUS "embree_DIR: ${embree_DIR}")
+message(STATUS "ospray_DIR: ${ospray_DIR}")
+message(STATUS "OSPRAY_INSTALL_DIR: ${OSPRAY_INSTALL_DIR}")
+
+get_cmake_property(_variableNames VARIABLES)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+
+SET(OSPRAY_LIBRARIES ${OSPRAY_INSTALL_DIR}/lib/libospray.so)
+SET(RKCOMMON_LIBRARY ${OSPRAY_INSTALL_DIR}/lib/libospray.so)
+
+# FIND_PACKAGE(rkcommon "1.10.0" REQUIRED)
+FIND_PACKAGE(ospray "2.10.0" REQUIRED)
+FIND_PACKAGE(embree "3.13.3" REQUIRED)
+
 OPTION(BUILD_EXAMPLES "Build example applications" ON)
-# OPTION(BUILD_DOCUMENTATION "Build documentation with Sphinx" OFF)
 
-# ${CGAL_LIBRARIES}
-SET(RASTY_LIBS ${EMBREE_LIBRARIES} ${OSPRAY_LIBRARIES} )
+SET(RASTY_LIBS  ${OSPRAY_LIBRARIES} ${EMBREE_LIBRARY}) # ${RKCOMMON_LIBRARY}
 SET(RASTY_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include"
     ${OSPRAY_INCLUDE_DIR} ${EMBREE_INCLUDE_DIRS} ${RKCOMMON_INCLUDE_DIR})
 
-# MESSAGE(STATUS "RASTY LIBS: ${RASTY_LIBS}")
-# MESSAGE(STATUS "OSPRAY LIBS: ${OSPRAY_LIBRARIES}")
-# MESSAGE(STATUS "EMBREE LIBS: ${EMBREE_LIBRARIES}")
+
+# SET(BASE_OSP /home/hp/github/research/geofabric/geofabric/)
+# SET(embree_DIR ${BASE_OSP}embree-3.13.3.x86_64.linux/lib/cmake/embree-3.13.3)
+# SET(ospray_ROOT ${BASE_OSP}ospray-2.10.0.x86_64.linux/lib/cmake/ospray-2.10.0 )
+# SET(ospray_DIR /opt/intel/oneapi/ospray/2.10.0/lib/cmake/ospray)
+# SET(ospray_ROOT /opt/intel/oneapi/ospray/2.10.0/)
+# SET(ospray_DIR ${BASE_OSP}ospray-2.10.0.x86_64.linux/lib/cmake/ospray-2.10.0)
+# SET(OSPRAY_CMAKE_DIR ${BASE_OSP}ospray-2.10.0.x86_64.linux/lib/cmake/ospray-2.10.0 )
+
+
+# include(cmake/FindOSPRay.cmake)
+
+
+# FIND_PACKAGE(ospray "2.10.0" REQUIRED)
+# FIND_PACKAGE(ospray "2.10.0" REQUIRED HINT ${ospray_DIR})
+# FIND_PACKAGE(embree "3.13.3" REQUIRED)
+# FIND_PACKAGE(rkcommon "1.10.0" REQUIRED)
+# FIND_PACKAGE(embree "3.13.3" REQUIRED HINT ${embree_DIR})
+# FIND_PACKAGE(CGAL)
+
+
+# FIND_PACKAGE(embree 3.2 REQUIRED)
+# FIND_PACKAGE(ospray REQUIRED)
+
+# get_cmake_property(_variableNames VARIABLES)
+# foreach (_variableName ${_variableNames})
+#     message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()
+
+# OPTION(USE_NETCDF "Enable NetCDF file reading" ON)
+# OPTION(BUILD_EXAMPLES "Build example applications" ON)
+# OPTION(BUILD_DOCUMENTATION "Build documentation with Sphinx" OFF)
+
+# ${CGAL_LIBRARIES}
+# SET(RASTY_LIBS  ${OSPRAY_LIBRARIES} ${EMBREE_LIBRARIES}) # ${RKCOMMON_LIBRARY}
+# SET(RASTY_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/include"
+    # ${OSPRAY_INCLUDE_DIR} ${EMBREE_INCLUDE_DIRS} ${RKCOMMON_INCLUDE_DIR})
+
+MESSAGE(STATUS "RASTY LIBS: ${RASTY_LIBS}")
+MESSAGE(STATUS "OSPRAY LIBS: ${OSPRAY_LIBRARIES}")
+MESSAGE(STATUS "EMBREE LIBS: ${EMBREE_LIBRARIES}")
+# MESSAGE(STATUS "RKCOMMON_INCLUDE_DIR: ${RKCOMMON_INCLUDE_DIR}")
 
 
 #USE_NETCDF adds netcdf includes/libs for data reading
@@ -51,11 +91,6 @@ SET(NETCDF_LIBRARY "/usr/lib/x86_64-linux-gnu/libnetcdf_c++4.so"
 SET(NETCDF_USE_DEFAULT_PATHS ON)
 
 FIND_PACKAGE(NetCDF COMPONENTS CXX)
-
-# get_cmake_property(_variableNames VARIABLES)
-# foreach (_variableName ${_variableNames})
-#     message(STATUS "${_variableName}=${${_variableName}}")
-# endforeach()
 
 IF(NETCDF_FOUND)
     ADD_DEFINITIONS(-DRASTY_NETCDF)
@@ -77,22 +112,13 @@ TARGET_LINK_LIBRARIES(rasty ${RASTY_LIBS} pthread jpeg gdal)
 IF(BUILD_EXAMPLES)
     ADD_EXECUTABLE(simple_render ${RASTY_SOURCES}
         "examples/simple_render.cpp")
-    TARGET_LINK_LIBRARIES(simple_render ${RASTY_LIBS} pthread jpeg gdal)
+    TARGET_LINK_LIBRARIES(simple_render ${RASTY_LIBS} pthread jpeg gdal ospray::ospray)
     TARGET_INCLUDE_DIRECTORIES(simple_render PUBLIC ${RASTY_INCLUDE_DIRS})
 
     ADD_EXECUTABLE(rastyTest ${RASTY_SOURCES}
     "examples/rastyTest.cpp")
     TARGET_LINK_LIBRARIES(rastyTest ${RASTY_LIBS} pthread jpeg gdal)
     TARGET_INCLUDE_DIRECTORIES(rastyTest PUBLIC ${RASTY_INCLUDE_DIRS})
-    # ADD_EXECUTABLE(timeSeries ${RASTY_SOURCES} "src/test/timeSeries.cpp")
-    # TARGET_LINK_LIBRARIES(timeSeries ${RASTY_LIBS} pthread jpeg)
-    # TARGET_INCLUDE_DIRECTORIES(timeSeries PUBLIC ${RASTY_INCLUDE_DIRS})
-    # ADD_EXECUTABLE(benchmark ${RASTY_SOURCES} "src/test/benchmark.cpp")
-    # TARGET_LINK_LIBRARIES(benchmark ${RASTY_LIBS} pthread jpeg)
-    # TARGET_INCLUDE_DIRECTORIES(benchmark PUBLIC ${RASTY_INCLUDE_DIRS})
-    # ADD_EXECUTABLE(omni ${RASTY_SOURCES} "src/test/omni.cpp")
-    # TARGET_LINK_LIBRARIES(omni ${RASTY_LIBS} pthread jpeg)
-    # TARGET_INCLUDE_DIRECTORIES(omni PUBLIC ${RASTY_INCLUDE_DIRS})
 ENDIF(BUILD_EXAMPLES)
 
 # IF(BUILD_DOCUMENTATION)
