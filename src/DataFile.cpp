@@ -19,26 +19,30 @@
 namespace rasty
 {
 
+/**
+ * Datafile Constructor/Destructor
+ * set data to NULL and frees it when destroyed
+*/
 DataFile::DataFile(): 
 statsCalculated(false), ncLoaded(false), varLoaded(false)
 {
-   //std::cout << "[DataFile] Init" << std::endl;
     this->data = NULL;
 }
 
 DataFile::~DataFile(){
-   //std::cout << "[DataFile] Deleting DataFile" << std::endl;
-
     if (this->data != NULL){
         free(this->data);
     }
 
     this->data = NULL;
-   //std::cout << "[DataFile] Deleted DataFile" << std::endl;
-
 }
 
 
+/**
+ * loadFromFile
+ * loads data from a file
+ * currently supports tiff and netcdf files
+*/
 void DataFile::loadFromFile(std::string filename)
 {
     this->filename = filename;
@@ -58,8 +62,12 @@ void DataFile::loadFromFile(std::string filename)
         
 }   
 
+/**
+ * loadTimeStep
+ * loads a single timestep from a netcdf file
+ * **Requires a netcdf file and a variable to be loaded**
+*/
 void DataFile::loadTimeStep(size_t timestep) {
-    std::cout<<"[DataFile] Loading timestep "<<timestep<<std::endl;
     if (this->varLoaded == false) {
         std::cerr << "No netCDF variable loaded!" << std::endl;
         throw std::exception();
@@ -82,9 +90,13 @@ void DataFile::loadTimeStep(size_t timestep) {
     }
 }
 
+/**
+ * loadVariable
+ * loads a variable from a netcdf file
+ * **Requires a netcdf file to be loaded**
+*/
 void DataFile::loadVariable(std::string varname)
 {
-    std::cout<< "[DataFile] Loading variable " << varname << std::endl;
     if (this->ncLoaded == false) {
         std::cerr << "No netCDF data loaded!" << std::endl;
         throw std::exception();
@@ -117,9 +129,12 @@ void DataFile::loadVariable(std::string varname)
         this->numValues = this->latDim * this->lonDim;
 
     this->varLoaded = true;
-    std::cout<< "[DataFile] Loaded variable " << varname << std::endl;
 }
 
+/**
+ * readNetCDF
+ * reads a netcdf file and stores the variable names
+*/
 void DataFile::readNetCDF()
 {
     this->ncFile = new netCDF::NcFile(filename.c_str(), netCDF::NcFile::read);
@@ -139,16 +154,23 @@ void DataFile::readNetCDF()
     this->ncLoaded = true;
 
 }
+
+/**
+ * getVariableNames
+ * returns list of variable names
+*/
 std::vector<std::string> DataFile::getVariableNames()
 {
     return this->variables;
 }
 
+
+/**
+ * readTIFF
+ * reads a tiff file and stores the data
+*/
 void DataFile::readTIFF()
 {
-    /* read in the raster data */
-    // GDALAllRegister();
-
     GDALDataset  *dataset;
     GDALRasterBand  *elevationBand;
     CPLErr err;
@@ -157,7 +179,7 @@ void DataFile::readTIFF()
     /* open the file */
     dataset = (GDALDataset *) GDALOpen(filename.c_str(), GA_ReadOnly);
     if( dataset == NULL ) {
-       //std::cout << "Failed to open" << std::endl;
+        std::cout << "Failed to open" << std::endl;
         exit(1);
     }
 
@@ -188,13 +210,12 @@ void DataFile::readTIFF()
 
     err = elevationBand->RasterIO(GF_Read, 0, 0, this->width, this->height, &this->data[0], this->width, this->height, GDT_Float32, 0, 0);
     if (err != CE_None) {
-       //std::cout << "Failed to read raster band" << std::endl;
+        std::cout << "Failed to read raster band" << std::endl;
         exit(1);
     }
 
     /* close the dataset */
     GDALClose(dataset); 
-    // GDALDestroy();
 
     /* convert data set to vertex and color arrays */
     numIndices = (this->width - 1) * (this->height - 1) * 2;
@@ -226,10 +247,10 @@ void DataFile::readTIFF()
     }
 }
    
-
-
-
-
+/**
+ * getFiletype
+ * returns the filetype of the file based on the extension
+*/
 FILETYPE DataFile::getFiletype()
 {
     std::stringstream ss;

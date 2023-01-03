@@ -4,6 +4,12 @@
 
 namespace rasty
 {
+    /**
+     * Cbar constructor
+     * Takes a string argument for the color map type
+     * Currently only supports "base" color map
+     * Sets function pointer to the appropriate color map function
+    */
     Cbar::Cbar(std::string cmap_type)
     {
         this->cmap_type = cmap_type;
@@ -45,6 +51,11 @@ namespace rasty
         return rkcommon::math::vec4f(r,g,b,1.0f);
     }
 
+    /**
+     * getColor
+     * Takes a float value and returns a vec4f color
+     * Uses the configured function pointer to call the appropriate color map function
+    */
     rkcommon::math::vec4f Cbar::getColor(float value)
     {
         return (this->*colorMap)(value,1,1);

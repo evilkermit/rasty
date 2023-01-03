@@ -18,28 +18,29 @@ namespace rasty {
             Configuration(rapidjson::Document& json);
             CONFSTATE getGeoConfigState();
             CONFSTATE getDataConfigState();
-
+            
+            // file(s) for the terrain
             std::string geoFilename;
             std::vector<std::string> geoGlobbedFilenames;
 
+            // file(s) for the data on the terrain
             std::string dataFilename;
             std::vector<std::string> dataGlobbedFilenames;
 
+            // set variable for data if needed
             std::string dataVariable;
-            // int dataXDim;
-            // int dataYDim;
-            // int dataZDim;
 
+            // image metadata
             int imageWidth;
             int imageHeight;
             std::string imageFilename;
             std::vector<unsigned char> bgColor;
-
             std::string colorMap;
             // std::vector<float> colorMap;
             // std::vector<float> opacityMap;
             float opacityAttenuation;
-
+            
+            // camera metadata
             unsigned int samples;
 
             float cameraX;
@@ -50,9 +51,11 @@ namespace rasty {
             float cameraUpY;
             float cameraUpZ;
 
+            // terrain scaling
             float elevationScale;
             float heightWidthScale;
             
+            // not used for now
             std::vector<float> isosurfaceValues;
             float specularity;
 

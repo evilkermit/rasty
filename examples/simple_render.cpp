@@ -27,7 +27,6 @@
 #include "DataFile.h"
 #include "Renderer.h"
 #include "Cbar.h"
-#include "ArcballCamera.h"
 #include <rasty.h>
 #include <time.h>
 

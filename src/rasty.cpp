@@ -12,11 +12,14 @@
 namespace rasty
 {
 
+/**
+ * rastyInit, rastyDestroy
+ * initialize and shutdown ospray and gdal
+*/
 void rastyInit(int argc, const char **argv)
 {
-    //std::cout<<"Initializing OSPRay"<<std::endl;
+    // initialize ospray
     ospInit(&argc, argv);
-    //std::cout<<"Done Initializing OSPRay"<<std::endl;
     // register gdal drivers
     GDALAllRegister();
 }
@@ -27,6 +30,12 @@ void rastyDestroy()
     GDALDestroy();
 }
 
+/**
+ * createID
+ * creates a unique ID for an object
+ * uses the MAC address of the first interface
+ * and the current time
+*/
 std::string createID()
 {
     // IDs are composed of a MAC address followed by a time

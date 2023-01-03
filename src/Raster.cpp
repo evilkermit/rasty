@@ -12,12 +12,11 @@ namespace rasty
 {
     
 
-/*
- * TODO:
- * change volume into geometry mesh
- */
 
-
+/**
+ * Raster constructor/destructor
+ * loads in tiff file and sets up ospray objects
+*/
 Raster::Raster(std::string filename)
 {   
     this->ID = createID();
@@ -31,32 +30,16 @@ Raster::Raster(std::string filename)
 
 Raster::~Raster()
 {
-   //std::cout << "[Raster] Deleting Raster" << std::endl;
     delete this->dataFile;
     this->dataFile = NULL;
-
-
-
-    // delete this->transferFunction;
-    // this->transferFunction = NULL;
-    // ospRemoveParam(this->oVolume, "voxelData");
-    // ospRemoveParam(this->oVolume, "dimensions");
-    // ospRemoveParam(this->oVolume, "voxelType");
-    // ospRemoveParam(this->oVolume, "voxelRange");
-    // ospRemoveParam(this->oVolume, "gridOrigin");
-    // ospRemoveParam(this->oVolume, "transferFunction");
-    // ospRelease(this->oVolume);
-    ////std::cout << "[Raster] Releasing data" << std::endl;
-    // ospRelease(this->oData);
-   //std::cout << "[Raster] Releasing mesh" << std::endl;
-    
     ospRelease(this->oMesh);
-   //std::cout << "[Raster] Deleted Raster" << std::endl;
-
 }
 
 
-
+/**
+ * init
+ * sets up ospray objects data and mesh
+*/
 void Raster::init()
 {
     this->elev_scale = 1.f / 10000.f;
@@ -87,16 +70,30 @@ void Raster::init()
     ospCommit(this->oMesh);
 
 }
+
+/**
+ * setColor(color)
+ * sets the color matrix of the mesh given a color matrix
+*/
 void Raster::setColor(std::vector<rkcommon::math::vec4f> color) {
+    // clear previous color data to conserve memory
     this->dataFile->color.clear();   
     this->dataFile->color.shrink_to_fit();   
 
+    // set new color data
     this->dataFile->color = color;
     this->setColor();
 }
 
+/**
+ * setColor()
+ * sets the color matrix of the mesh using the stored class color matrix
+*/
 void Raster::setColor() {
+    // clear previous vertex colors
     ospRemoveParam(this->oMesh, "vertex.color");
+
+    // set new vertex colors
     OSPData data = ospNewSharedData1D(this->dataFile->color.data(), OSP_VEC4F, this->dataFile->color.size());
     ospCommit(data);
     ospSetObject(this->oMesh, "vertex.color", data);
@@ -104,6 +101,10 @@ void Raster::setColor() {
     ospCommit(this->oMesh);
 }
 
+/**
+ * setElevationScale, setHeightWidthScale, getHW, getBounds, getCenterTransformation
+ * helper functions for mesh scaling and transformation
+*/
 void Raster::setElevationScale(float elevationScale) {
     this->elev_scale = elevationScale;
 }
@@ -150,16 +151,23 @@ rkcommon::math::affine3f Raster::getCenterTransformation()
 
 }
 
+/** 
+ * asOSPRayObject
+ * returns the ospray mesh object
+*/
 OSPGeometry Raster::asOSPRayObject()
 {
     return this->oMesh;
 }
 
+/**
+ * loadFromFile
+ * loads in a tiff file and calculates statistics
+*/
 void Raster::loadFromFile(std::string filename)
 {
     this->dataFile->loadFromFile(filename);
     this->dataFile->calculateStatistics();
-    // this->dataFile->printStatistics();
 }
 
 }

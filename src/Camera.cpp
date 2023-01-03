@@ -8,32 +8,28 @@
 
 namespace rasty {
 
+/**
+ * Camera Constructor/Destructor
+ * Sets up and destroys ospray camera object
+*/
 Camera::Camera(int width, int height) :
     imageWidth(width), imageHeight(height), xPos(0.0), yPos(0.0), zPos(0.0),
     viewX(0.0), viewY(0.0), viewZ(0.0), orbitRadius(0.0), 
     upX(0.0), upY(1.0), upZ(0.0)
-{
-   //std::cout << "[Camera] init" << std::endl;
+{   
     this->transform = rkcommon::math::affine3f::translate(rkcommon::math::vec3f(0.0, 0.0, 0.0));
     this->ID = createID();
-    //setup OSPRay camera with basic parameters
     this->oCamera = ospNewCamera("perspective");
     this->updateOSPRayPosition();
     ospSetFloat(this->oCamera, "aspect", (float)this->imageWidth/imageHeight);
-    // ospSetFloat(this->oCamera, "fov", 120);
     ospCommit(this->oCamera);
 }
 
 Camera::~Camera()
 {
-   //std::cout << "[Camera] Deleting Camera" << std::endl;
-    // ospRemoveParam(this->oCamera, "aspect");
-    // ospRemoveParam(this->oCamera, "pos");
-    // ospRemoveParam(this->oCamera, "dir");
-    // ospRemoveParam(this->oCamera, "up");
     ospRelease(this->oCamera);
-   //std::cout << "[Camera] Deleted Camera" << std::endl;
 }
+
 
 void Camera::setOrbitRadius(float radius)
 {
@@ -96,7 +92,10 @@ int Camera::getImageHeight()
 }
 
 
-
+/**
+ * updateOSPRayPosition()
+ * Updates the position of the OSPRay camera with the current values
+*/
 void Camera::updateOSPRayPosition()
 {
     // //std::cout<< "[Camera] updateOSPRayPosition" << std::endl;
@@ -114,6 +113,10 @@ void Camera::updateOSPRayPosition()
     ospCommit(this->oCamera);
 }
 
+/**
+ * setRegion()
+ * Sets the region of the image to render
+*/
 void Camera::setRegion(float top, float right, float bottom, float left)
 {
     // render only a defined region of the current view (set clip space)
@@ -128,6 +131,10 @@ void Camera::setRegion(float top, float right, float bottom, float left)
     ospSetParam(this->oCamera, "imageEnd", OSP_VEC2F, upperRight);
 }
 
+/**
+ * asOSPRayObject()
+ * Returns the OSPRay camera object
+*/
 OSPCamera Camera::asOSPRayObject()
 {
     return this->oCamera;

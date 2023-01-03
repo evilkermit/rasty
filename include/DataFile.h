@@ -29,7 +29,8 @@ namespace rasty
 
             std::string filename;
             FILETYPE filetype;
-
+            
+            /* netcdf metadata */
             unsigned long int lonDim;
             unsigned long int latDim;
             unsigned long int timeDim;
@@ -37,14 +38,14 @@ namespace rasty
             unsigned long int width;
             unsigned long int numValues;
 
+            /* geo info */
             double originX;
             double originY;
             double pixelSizeX;
             double pixelSizeY;
-
             double geoTransform[6];
 
-
+            /* stats about terrain data*/
             float minVal;
             float maxVal;
             float avgVal;

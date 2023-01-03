@@ -25,7 +25,6 @@ namespace rasty{
      * Provides simplified camera movement
      */
     class Camera; 
-    class ArcballCamera;
 
     /* configuration class, uses rapidjson to parse JSON
      * config files

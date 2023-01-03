@@ -24,7 +24,7 @@ namespace rasty {
             void setTransform(rkcommon::math::affine3f transform);
             int getImageWidth();
             int getImageHeight();
-            // no longer needed as the volume is centered automatically
+            // no longer needed as the raster is centered automatically
             void centerView();
 
             void setRegion(float top, float right, float bottom, float left);

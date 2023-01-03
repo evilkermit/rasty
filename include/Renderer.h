@@ -31,8 +31,6 @@ namespace rasty {
             void setCbar(Cbar *cbar);
             void addLight();
             void setupWorld();
-            // void setIsosurface(Raster *v, std::vector<float> &isoValues);
-            // void setIsosurface(Raster *v, std::vector<float> &isoValues, float specular);
             void setCamera(Camera *c);
             void setSamples(unsigned int spp);
 
