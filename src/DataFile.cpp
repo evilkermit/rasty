@@ -149,7 +149,6 @@ void DataFile::readNetCDF()
             it->first != "time") {
             this->variables.push_back(it->first);
         }
-       std::cout << "Variable name: " << it->first << std::endl;
     }
     this->ncLoaded = true;
 
