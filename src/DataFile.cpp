@@ -24,7 +24,8 @@ namespace rasty
  * set data to NULL and frees it when destroyed
 */
 DataFile::DataFile(): 
-statsCalculated(false), ncLoaded(false), varLoaded(false)
+statsCalculated(false), ncLoaded(false), varLoaded(false), 
+lastVarLoaded(""), lastStepLoaded(-1), newVar(true), newData(true)
 {
     this->data = NULL;
 }
@@ -73,8 +74,13 @@ void DataFile::loadTimeStep(size_t timestep) {
         throw std::exception();
     }
 
-    // load data
+    if (!this->newVar && timestep == this->lastStepLoaded) {
+        std::cout << "[loadTimeStep] var (" << this->lastVarLoaded <<") & timestep (" << timestep << ") already loaded" << std::endl;
+        newData = false;
+        return;
+    }
 
+    // load data
     if (0 <= timestep && timestep < this->timeDim) {
         if (this->data != NULL) {
             free(this->data);
@@ -84,9 +90,12 @@ void DataFile::loadTimeStep(size_t timestep) {
             std::vector<size_t> {timestep, 0, 0}, 
             std::vector<size_t> {1, this->latDim, this->lonDim}, 
             this->data);
+        this->lastStepLoaded = timestep;
+        newData = true;
     }
     else {
         std::cerr << "Invalid timestep!" << std::endl;
+        throw std::exception();
     }
 }
 
@@ -100,6 +109,12 @@ void DataFile::loadVariable(std::string varname)
     if (this->ncLoaded == false) {
         std::cerr << "No netCDF data loaded!" << std::endl;
         throw std::exception();
+    }
+
+    if (this->lastVarLoaded == varname) {
+        this->newVar = false;
+        std::cout << "[loadVariable] var (" << this->lastVarLoaded <<") already loaded" << std::endl;
+        return;
     }
 
     // search map for variable
@@ -126,9 +141,29 @@ void DataFile::loadVariable(std::string varname)
         std::cerr << "Variable has wrong dimension!" << std::endl;
         throw std::exception();
     }
-        this->numValues = this->latDim * this->lonDim;
+
+    this->numValues = this->latDim * this->lonDim;
+
 
     this->varLoaded = true;
+    this->lastVarLoaded = varname;
+    this->newVar = true;
+
+    // get the units if we can
+    try {
+        this->ncVarUnit = this->ncVariable.getAtt("units");
+        if (this->ncVarUnit.isNull()){
+            this->unitName = "";
+        }
+        else {
+            this->ncVarUnit.getValues(this->unitName);
+        }
+        std::cout << this->unitName << std::endl;
+    }
+    catch (...) {
+        this->unitName = "";
+    }
+
 }
 
 /**

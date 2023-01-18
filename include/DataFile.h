@@ -63,9 +63,16 @@ namespace rasty
             
             netCDF::NcFile *ncFile;
             netCDF::NcVar ncVariable;
+            netCDF::NcVarAtt ncVarUnit;
+            std::string unitName;
             bool statsCalculated;
             bool ncLoaded;
             bool varLoaded;
+
+            std::string lastVarLoaded;
+            int lastStepLoaded;
+            bool newVar;
+            bool newData;
         private:
             FILETYPE getFiletype();
             void readTIFF();
