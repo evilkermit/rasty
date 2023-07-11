@@ -1,6 +1,7 @@
 #include "DataFile.h"
 
 #include <cmath>
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -24,17 +25,21 @@ namespace rasty
  * set data to NULL and frees it when destroyed
 */
 DataFile::DataFile(): 
-statsCalculated(false), ncLoaded(false), varLoaded(false), 
-lastVarLoaded(""), lastStepLoaded(-1), newVar(true), newData(true)
+statsCalculated(false), ncLoaded(false), varLoaded(false)
 {
+    this->boundary = NULL;
     this->data = NULL;
 }
 
 DataFile::~DataFile(){
+    if (this->boundary != NULL){
+        free(this->boundary);
+    }
     if (this->data != NULL){
         free(this->data);
     }
 
+    this->boundary = NULL;
     this->data = NULL;
 }
 
@@ -74,13 +79,8 @@ void DataFile::loadTimeStep(size_t timestep) {
         throw std::exception();
     }
 
-    if (!this->newVar && timestep == this->lastStepLoaded) {
-        std::cout << "[loadTimeStep] var (" << this->lastVarLoaded <<") & timestep (" << timestep << ") already loaded" << std::endl;
-        newData = false;
-        return;
-    }
-
     // load data
+
     if (0 <= timestep && timestep < this->timeDim) {
         if (this->data != NULL) {
             free(this->data);
@@ -88,14 +88,11 @@ void DataFile::loadTimeStep(size_t timestep) {
         this->data = (float*) malloc(this->numValues * sizeof(float));
         this->ncVariable.getVar(
             std::vector<size_t> {timestep, 0, 0}, 
-            std::vector<size_t> {1, this->latDim, this->lonDim}, 
+            std::vector<size_t> {1, this->lonDim, this->latDim}, 
             this->data);
-        this->lastStepLoaded = timestep;
-        newData = true;
     }
     else {
         std::cerr << "Invalid timestep!" << std::endl;
-        throw std::exception();
     }
 }
 
@@ -111,14 +108,9 @@ void DataFile::loadVariable(std::string varname)
         throw std::exception();
     }
 
-    if (this->lastVarLoaded == varname) {
-        this->newVar = false;
-        std::cout << "[loadVariable] var (" << this->lastVarLoaded <<") already loaded" << std::endl;
-        return;
-    }
-
     // search map for variable
     auto it = this->varmap.find(varname);
+    this->varName = it->first;
     this->ncVariable = it->second;
 
     if (this->ncVariable.isNull()) {
@@ -129,41 +121,31 @@ void DataFile::loadVariable(std::string varname)
     // overwrite any configured values   with the file's values
     if (this->ncVariable.getDimCount() == 3) {
         this->timeDim = this->ncVariable.getDim(0).getSize();
-        this->latDim = this->ncVariable.getDim(1).getSize();
-        this->lonDim = this->ncVariable.getDim(2).getSize();
+        this->lonDim = this->ncVariable.getDim(1).getSize();
+        this->latDim = this->ncVariable.getDim(2).getSize();
     }
     else if (this->ncVariable.getDimCount() == 2) {
         this->timeDim = 1;
-        this->latDim = this->ncVariable.getDim(0).getSize();
-        this->lonDim = this->ncVariable.getDim(1).getSize();
+        this->lonDim = this->ncVariable.getDim(0).getSize();
+        this->latDim = this->ncVariable.getDim(1).getSize();
     }
     else {
         std::cerr << "Variable has wrong dimension!" << std::endl;
         throw std::exception();
     }
-
     this->numValues = this->latDim * this->lonDim;
 
+    if (this->boundary != NULL) {
+        free(this->boundary);
+    }
+    this->boundary = (float*) malloc(this->numValues * sizeof(float));
+    this->varmap.find("bdy")->second.getVar(
+        std::vector<size_t> {0, 0},
+        std::vector<size_t> {this->lonDim, this->latDim},
+        this->boundary
+    );
 
     this->varLoaded = true;
-    this->lastVarLoaded = varname;
-    this->newVar = true;
-
-    // get the units if we can
-    try {
-        this->ncVarUnit = this->ncVariable.getAtt("units");
-        if (this->ncVarUnit.isNull()){
-            this->unitName = "";
-        }
-        else {
-            this->ncVarUnit.getValues(this->unitName);
-        }
-        std::cout << this->unitName << std::endl;
-    }
-    catch (...) {
-        this->unitName = "";
-    }
-
 }
 
 /**
@@ -181,6 +163,8 @@ void DataFile::readNetCDF()
     {
         if (it->first != "latitude" &&
             it->first != "longitude" &&
+            it->first != "bdy" &&
+            it->first != "dem" &&
             it->first != "time") {
             this->variables.push_back(it->first);
         }
@@ -209,6 +193,9 @@ void DataFile::readTIFF()
     GDALRasterBand  *elevationBand;
     CPLErr err;
     int numIndices;
+    std::filesystem::path tiffPath(filename);
+
+    this->basinName = tiffPath.stem();
 
     /* open the file */
     dataset = (GDALDataset *) GDALOpen(filename.c_str(), GA_ReadOnly);
@@ -221,6 +208,7 @@ void DataFile::readTIFF()
     this->width = dataset->GetRasterXSize();
     this->height = dataset->GetRasterYSize();
     this->numValues = this->width * this->height;
+    this->numVertices = this->width * this->height;
     if (dataset->GetGeoTransform(this->geoTransform) == CE_None ) {
         this->originX = this->geoTransform[0];
         this->originY = this->geoTransform[3];
@@ -240,7 +228,7 @@ void DataFile::readTIFF()
 
     /* read the raster band into an array */
     /* TODO - look into being able to scale this down need be */
-    this->data = (float *)malloc(this->numValues * sizeof(float));
+    this->data = (float *)malloc(this->numVertices * sizeof(float));
 
     err = elevationBand->RasterIO(GF_Read, 0, 0, this->width, this->height, &this->data[0], this->width, this->height, GDT_Float32, 0, 0);
     if (err != CE_None) {
@@ -253,18 +241,22 @@ void DataFile::readTIFF()
 
     /* convert data set to vertex and color arrays */
     numIndices = (this->width - 1) * (this->height - 1) * 2;
-    this->vertex.reserve(this->numValues);
-    this->color.reserve(this->numValues);
+    this->vertex.reserve(this->numVertices);
+    this->color.reserve(this->numVertices);
     this->index.reserve(numIndices);
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {
+            this->texcoords.push_back(rkcommon::math::vec2f(
+                ((float)y + 0.5) / (float)this->height,
+                ((float)x + 0.5) / (float)this->width
+            ));
 
             /* get current coordinate */
             double currY = this->originY + (y * this->pixelSizeY);
             double currX = this->originX + (x * this->pixelSizeX);
 
             /* get the elevation value */
-            double z = this->data[(y * this->width) + x];
+            double z = this->data[((this->height - y - 1) * this->width) + x];
             this->vertex.push_back(rkcommon::math::vec3f((float)currX,(float)z,(float)currY));
             this->color.push_back(rkcommon::math::vec4f(0.9f, 0.5f, 0.5f, 1.0f));
 

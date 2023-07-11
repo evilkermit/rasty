@@ -33,7 +33,6 @@ namespace rasty {
             void setupWorld();
             void setCamera(Camera *c);
             void setSamples(unsigned int spp);
-            void setNRenderFrame(unsigned int n);
 
             void render();
             void renderToBuffer(unsigned char **buffer);
@@ -49,6 +48,7 @@ namespace rasty {
             OSPGroup oGroup;
             OSPInstance oInstance;
             OSPWorld oWorld;
+
 
             // OSPModel oModel;
             OSPCamera oCamera;
@@ -78,7 +78,6 @@ namespace rasty {
             std::vector<OSPLight> lights;
             float lightDirection[3];
             unsigned int samples;
-            unsigned int nRenderFrame;
 
             bool worldIsSetup;
             bool rasterChanged;

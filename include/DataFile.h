@@ -37,6 +37,7 @@ namespace rasty
             unsigned long int height;
             unsigned long int width;
             unsigned long int numValues;
+            unsigned long int numVertices;
 
             /* geo info */
             double originX;
@@ -51,6 +52,10 @@ namespace rasty
             float avgVal;
             float stdDev;
             float *data;
+            float *boundary;
+
+            /* texture coordinates for each vertex */
+            std::vector<rkcommon::math::vec2f> texcoords;
 
             /* used for geo file loading */
             std::vector<rkcommon::math::vec3f> vertex;
@@ -60,19 +65,15 @@ namespace rasty
             /* used for nc file loading */
             std::multimap<std::string, netCDF::NcVar> varmap;
             std::vector<std::string> variables;
+
+            std::string basinName;
+            std::string varName;
             
             netCDF::NcFile *ncFile;
             netCDF::NcVar ncVariable;
-            netCDF::NcVarAtt ncVarUnit;
-            std::string unitName;
             bool statsCalculated;
             bool ncLoaded;
             bool varLoaded;
-
-            std::string lastVarLoaded;
-            int lastStepLoaded;
-            bool newVar;
-            bool newData;
         private:
             FILETYPE getFiletype();
             void readTIFF();

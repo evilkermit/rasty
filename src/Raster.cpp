@@ -61,6 +61,12 @@ void Raster::init()
     ospSetObject(this->oMesh, "vertex.color", data);
     ospRelease(data);
 
+    /* mesh: set texture coordinates */
+    data = ospNewSharedData1D(this->dataFile->texcoords.data(), OSP_VEC2F, this->dataFile->texcoords.size());
+    ospCommit(data);
+    ospSetObject(this->oMesh, "vertex.texcoords", data);
+    ospRelease(data);
+
     /* mesh: set triangle indices */
     data = ospNewSharedData1D(this->dataFile->index.data(), OSP_VEC3UI, this->dataFile->index.size());
     ospCommit(data);

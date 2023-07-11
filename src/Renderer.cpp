@@ -45,7 +45,6 @@ Renderer::Renderer() :
     this->lastRasterID = "unset";
     this->lastCameraID = "unset";
     this->worldIsSetup = false;
-    this->nRenderFrame = 10;
 }
 
 Renderer::~Renderer()
@@ -86,8 +85,7 @@ void Renderer::setBackgroundColor(unsigned char r, unsigned char g, unsigned cha
 /**
  * Set the background color of the renderer
  * @param bgColor vector of color values
-*/
-void Renderer::setBackgroundColor(std::vector<unsigned char> bgColor)
+*/void Renderer::setBackgroundColor(std::vector<unsigned char> bgColor)
 {
     // if the incoming vector is empty, it's probably from the config
     // just set to black instead
@@ -97,11 +95,6 @@ void Renderer::setBackgroundColor(std::vector<unsigned char> bgColor)
         this->setBackgroundColor(bgColor[0], bgColor[1], bgColor[2], 255);
     else
         this->setBackgroundColor(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
-}
-
-void Renderer::setNRenderFrame(unsigned int n)
-{
-    this->nRenderFrame = n;
 }
 
 /**
@@ -156,9 +149,31 @@ void Renderer::setCbar(Cbar *cbar) {
 */
 void Renderer::setData(DataFile * dataFile)
 {
+    int height = this->rastyRaster->dataFile->height;
+    int width = this->rastyRaster->dataFile->width;
+
     this->rastyRaster->dataFile->color.clear();
-    for (int i = 0; i < dataFile->numValues; i++) {
-        this->rastyRaster->dataFile->color.push_back(this->cbar->getColor(dataFile->data[i]));
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            float yPct = (float)y / height;
+            float xPct = (float)x / width;
+
+            int dataY = dataFile->latDim - (int)(yPct * (float)dataFile->latDim) - 1;
+            int dataX = (int)(xPct * (float)dataFile->lonDim);
+            int index = (dataX * dataFile->latDim) + dataY;
+            float mask = dataFile->boundary[index];
+            float value = dataFile->data[index];
+
+            if (mask == 0.0f) {
+                this->rastyRaster->dataFile->color.push_back(this->cbar->getColor(
+                    this->rastyRaster->dataFile->basinName,
+                    dataFile->varName,
+                    value
+                ));
+            } else {
+                this->rastyRaster->dataFile->color.push_back(rkcommon::math::vec4f(0.1f, 0.1f, 0.1f, 1.0f));
+            }
+        }
     }
     this->rastyRaster->setColor();
     this->rasterChanged = true;
@@ -174,10 +189,8 @@ void Renderer::addLight()
     if(this->lights.size() == 0) {
         // create a new directional light
         OSPLight light = ospNewLight("ambient");
-        // OSPLight light = ospNewLight("distant");
-        float direction[] = {0, -1, 1};
+        // float direction[] = {0, -1, 1};
         // ospSetVec3f(light, "direction", 0, -1, -1);
-        // ospSetParam(light, "direction", OSP_VEC3F, direction);
         // set the apparent size of the light in degrees
         // 0.53 approximates the Sun
         // ospSetFloat(light, "angularDiameter", 0.53);
@@ -397,7 +410,7 @@ void Renderer::render()
     ospResetAccumulation(this->oFrameBuffer);
 
     // TODO: hardcoded to render 10 frames for now
-    for (int frames = 0; frames < this->nRenderFrame; frames++){
+    for (int frames = 0; frames < 10; frames++){
         ospRenderFrameBlocking(this->oFrameBuffer, this->oRenderer, this->oCamera, this->oWorld);
     }
 }

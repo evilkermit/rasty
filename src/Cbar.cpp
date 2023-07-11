@@ -1,5 +1,8 @@
 #include "Cbar.h"
+
 #include "ospray/ospray_cpp/ext/rkcommon.h"
+#include "rapidjson/filereadstream.h"
+#include "tinycolormap.hpp"
 
 
 namespace rasty
@@ -12,6 +15,19 @@ namespace rasty
     */
     Cbar::Cbar(std::string cmap_type)
     {
+        // get the basin/variable min/maxes for consistent color bars.
+        FILE *fp = fopen("/data/ranges.json", "r");
+        fseek(fp, 0, SEEK_END);
+        long fileLength = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+
+        char *json = (char *)malloc(fileLength + 1);
+        fread(json, 1, fileLength, fp);
+        fclose(fp);
+        json[fileLength] = 0;
+
+        this->ranges.ParseInsitu(json);
+
         this->cmap_type = cmap_type;
         if (cmap_type == "base"){
             this->colorMap = &rasty::Cbar::HSVtoRGB;
@@ -56,8 +72,14 @@ namespace rasty
      * Takes a float value and returns a vec4f color
      * Uses the configured function pointer to call the appropriate color map function
     */
-    rkcommon::math::vec4f Cbar::getColor(float value)
+    rkcommon::math::vec4f Cbar::getColor(std::string basin, std::string variable, float value)
     {
-        return (this->*colorMap)(value,1,1);
+        float min = std::stof(this->ranges[basin.c_str()][variable.c_str()][0].GetString());
+        float max = std::stof(this->ranges[basin.c_str()][variable.c_str()][1].GetString());
+
+        float normalizedValue = (value - min) / (max - min);
+        tinycolormap::Color color = tinycolormap::GetColor(normalizedValue, tinycolormap::ColormapType::Viridis);
+
+        return rkcommon::math::vec4f(color.r(), color.g(), color.b(), 1.0f);
     }
 }
