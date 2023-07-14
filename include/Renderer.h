@@ -47,6 +47,7 @@ namespace rasty {
             OSPGeometricModel oModel;
             OSPGroup oGroup;
             OSPInstance oInstance;
+            OSPTexture oTexture;
             OSPWorld oWorld;
 
 

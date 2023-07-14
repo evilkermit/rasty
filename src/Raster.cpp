@@ -55,12 +55,6 @@ void Raster::init()
     ospSetObject(this->oMesh, "vertex.position", data);
     ospRelease(data); // we are done using this handle
 
-    /* mesh: set vertex colors */
-    data = ospNewSharedData1D(this->dataFile->color.data(), OSP_VEC4F, this->dataFile->color.size());
-    ospCommit(data);
-    ospSetObject(this->oMesh, "vertex.color", data);
-    ospRelease(data);
-
     /* mesh: set texture coordinates */
     data = ospNewSharedData1D(this->dataFile->texcoords.data(), OSP_VEC2F, this->dataFile->texcoords.size());
     ospCommit(data);

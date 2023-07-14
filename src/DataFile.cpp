@@ -242,13 +242,12 @@ void DataFile::readTIFF()
     /* convert data set to vertex and color arrays */
     numIndices = (this->width - 1) * (this->height - 1) * 2;
     this->vertex.reserve(this->numVertices);
-    this->color.reserve(this->numVertices);
     this->index.reserve(numIndices);
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {
             this->texcoords.push_back(rkcommon::math::vec2f(
-                ((float)y + 0.5) / (float)this->height,
-                ((float)x + 0.5) / (float)this->width
+                ((float)y) / (float)this->height,
+                ((float)x) / (float)this->width
             ));
 
             /* get current coordinate */
@@ -258,7 +257,6 @@ void DataFile::readTIFF()
             /* get the elevation value */
             double z = this->data[((this->height - y - 1) * this->width) + x];
             this->vertex.push_back(rkcommon::math::vec3f((float)currX,(float)z,(float)currY));
-            this->color.push_back(rkcommon::math::vec4f(0.9f, 0.5f, 0.5f, 1.0f));
 
             /* create indices for vertex array */
             if (y+1 < this->height && x+1 < this->width) {
