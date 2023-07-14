@@ -58,7 +58,7 @@ void Raster::init()
     /* mesh: set texture coordinates */
     data = ospNewSharedData1D(this->dataFile->texcoords.data(), OSP_VEC2F, this->dataFile->texcoords.size());
     ospCommit(data);
-    ospSetObject(this->oMesh, "vertex.texcoords", data);
+    ospSetObject(this->oMesh, "vertex.texcoord", data);
     ospRelease(data);
 
     /* mesh: set triangle indices */

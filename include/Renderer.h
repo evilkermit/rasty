@@ -7,6 +7,7 @@
 #define cimg_use_jpeg 1 
 
 #include <rasty.h>
+#include "ospray/ospray_cpp/ext/rkcommon.h"
 
 #include <string>
 #include <vector>
@@ -82,6 +83,8 @@ namespace rasty {
 
             bool worldIsSetup;
             bool rasterChanged;
+
+            std::vector<rkcommon::math::vec3f> textureData;
     };
 }
 

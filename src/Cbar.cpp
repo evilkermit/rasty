@@ -72,7 +72,7 @@ namespace rasty
      * Takes a float value and returns a vec4f color
      * Uses the configured function pointer to call the appropriate color map function
     */
-    rkcommon::math::vec4f Cbar::getColor(std::string basin, std::string variable, float value)
+    rkcommon::math::vec3f Cbar::getColor(std::string basin, std::string variable, float value)
     {
         float min = std::stof(this->ranges[basin.c_str()][variable.c_str()][0].GetString());
         float max = std::stof(this->ranges[basin.c_str()][variable.c_str()][1].GetString());
@@ -80,6 +80,6 @@ namespace rasty
         float normalizedValue = (value - min) / (max - min);
         tinycolormap::Color color = tinycolormap::GetColor(normalizedValue, tinycolormap::ColormapType::Viridis);
 
-        return rkcommon::math::vec4f(color.r(), color.g(), color.b(), 1.0f);
+        return rkcommon::math::vec3f(color.r(), color.g(), color.b());
     }
 }

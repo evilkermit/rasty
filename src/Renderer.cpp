@@ -155,36 +155,35 @@ void Renderer::setData(DataFile * dataFile)
         this->oTexture = NULL;
     }
     this->oTexture = ospNewTexture("texture2d");
-    ospSetInt(this->oTexture, "format", OSP_TEXTURE_RGBA32F);
+    ospSetInt(this->oTexture, "format", OSP_TEXTURE_RGB32F);
+    this->textureData.clear();
 
-    std::vector<rkcommon::math::vec4f> textureData;
-
-    for (int x = 0; x < dataFile->lonDim; x++) {
-        for (int y = 0; y < dataFile->latDim; y++) {
-            int index = (x * dataFile->latDim) + y;
+    for (int y = 0; y < dataFile->lonDim; y++) {
+        for (int x = dataFile->latDim - 1; x >= 0; x--) {
+            int index = (y * dataFile->latDim) + x;
             float mask = dataFile->boundary[index];
             float value = dataFile->data[index];
 
             if (mask == 0.0f) {
-                textureData.push_back(this->cbar->getColor(
+                this->textureData.push_back(this->cbar->getColor(
                     this->rastyRaster->dataFile->basinName,
                     dataFile->varName,
                     value
                 ));
             } else {
-                // TODO: change back to 0.7f after texture works
-                textureData.push_back(rkcommon::math::vec4f(0.1f, 0.1f, 0.1f, 1.0f));
+                this->textureData.push_back(rkcommon::math::vec3f(0.7f, 0.7f, 0.7f));
             }
         }
     }
 
-    OSPData data = ospNewSharedData2D(textureData.data(), OSP_VEC4F, dataFile->lonDim, dataFile->latDim);
+    OSPData data = ospNewSharedData2D(this->textureData.data(), OSP_VEC3F, dataFile->latDim, dataFile->lonDim);
     ospCommit(data);
     ospSetObject(this->oTexture, "data", data);
     ospRelease(data);
     ospCommit(this->oTexture);
 
     this->rasterChanged = true;
+    this->setRaster(this->rastyRaster);
 }
 
 /**

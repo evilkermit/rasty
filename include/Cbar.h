@@ -10,7 +10,7 @@ namespace rasty
     class Cbar {
         public:
             Cbar(std::string cmap_type);
-            rkcommon::math::vec4f getColor(std::string basin, std::string variable, float value);
+            rkcommon::math::vec3f getColor(std::string basin, std::string variable, float value);
 
         private:
             rkcommon::math::vec4f HSVtoRGB(float h, float s, float v);
